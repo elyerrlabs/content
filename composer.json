@@ -1,0 +1,31 @@
+{
+  "name": "elyerr/content",
+  "type": "project",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Elvis Yerel Roman Concha",
+      "email": "yerel9212@yahoo.es",
+      "role": "owner",
+      "homepage": "https://github.com/elyerrlabs/content"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Content\\App\\": "app/",
+      "Content\\Database\\Factories\\": "database/factories/",
+      "Content\\Database\\Seeders\\": "database/seeders/",
+      "Content\\Tests\\": "tests/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Content\\App\\Providers\\ElyscopeServiceProvider",
+        "Content\\App\\Providers\\ModuleServiceProvider",
+        "Content\\App\\Providers\\RouteServiceProvider"
+      ]
+    }
+  },
+  "minimum-stability": "stable"
+}

@@ -1,0 +1,97 @@
+{
+  "_esm-BPVwdH1y.js": {
+    "file": "assets/esm-BPVwdH1y.js",
+    "name": "esm"
+  },
+  "_locale-CrP_-mJ2.js": {
+    "file": "assets/locale-CrP_-mJ2.js",
+    "name": "locale"
+  },
+  "node_modules/@fortawesome/fontawesome-free/webfonts/fa-brands-400.woff2": {
+    "file": "assets/fa-brands-400-BP5tdqmh.woff2",
+    "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-brands-400.woff2"
+  },
+  "node_modules/@fortawesome/fontawesome-free/webfonts/fa-regular-400.woff2": {
+    "file": "assets/fa-regular-400-nyy7hhHF.woff2",
+    "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-regular-400.woff2"
+  },
+  "node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff2": {
+    "file": "assets/fa-solid-900-DRAAbZTg.woff2",
+    "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff2"
+  },
+  "node_modules/@fortawesome/fontawesome-free/webfonts/fa-v4compatibility.woff2": {
+    "file": "assets/fa-v4compatibility-DD84SGiu.woff2",
+    "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-v4compatibility.woff2"
+  },
+  "node_modules/@mdi/font/fonts/materialdesignicons-webfont.eot": {
+    "file": "assets/materialdesignicons-webfont-CSr8KVlo.eot",
+    "src": "node_modules/@mdi/font/fonts/materialdesignicons-webfont.eot"
+  },
+  "node_modules/@mdi/font/fonts/materialdesignicons-webfont.ttf": {
+    "file": "assets/materialdesignicons-webfont-B7mPwVP_.ttf",
+    "src": "node_modules/@mdi/font/fonts/materialdesignicons-webfont.ttf"
+  },
+  "node_modules/@mdi/font/fonts/materialdesignicons-webfont.woff": {
+    "file": "assets/materialdesignicons-webfont-PXm3-2wK.woff",
+    "src": "node_modules/@mdi/font/fonts/materialdesignicons-webfont.woff"
+  },
+  "node_modules/@mdi/font/fonts/materialdesignicons-webfont.woff2": {
+    "file": "assets/materialdesignicons-webfont-Dp5v-WZN.woff2",
+    "src": "node_modules/@mdi/font/fonts/materialdesignicons-webfont.woff2"
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-B6M0xp4B.css",
+    "name": "app",
+    "names": [
+      "app.css"
+    ],
+    "src": "resources/css/app.css",
+    "isEntry": true,
+    "assets": [
+      "assets/fa-brands-400-BP5tdqmh.woff2",
+      "assets/fa-regular-400-nyy7hhHF.woff2",
+      "assets/fa-solid-900-DRAAbZTg.woff2",
+      "assets/fa-v4compatibility-DD84SGiu.woff2",
+      "assets/materialdesignicons-webfont-CSr8KVlo.eot",
+      "assets/materialdesignicons-webfont-Dp5v-WZN.woff2",
+      "assets/materialdesignicons-webfont-PXm3-2wK.woff",
+      "assets/materialdesignicons-webfont-B7mPwVP_.ttf"
+    ]
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-R9y9hJ-R.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "imports": [
+      "_locale-CrP_-mJ2.js"
+    ],
+    "dynamicImports": [
+      "resources/js/pages/Admin/Index.vue"
+    ]
+  },
+  "resources/js/pages.js": {
+    "file": "assets/pages-GaafzMjm.js",
+    "name": "pages",
+    "src": "resources/js/pages.js",
+    "isEntry": true,
+    "imports": [
+      "_locale-CrP_-mJ2.js",
+      "_esm-BPVwdH1y.js"
+    ]
+  },
+  "resources/js/pages/Admin/Index.vue": {
+    "file": "assets/Index-BOOb19Os.js",
+    "name": "Index",
+    "src": "resources/js/pages/Admin/Index.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_locale-CrP_-mJ2.js",
+      "resources/js/app.js",
+      "_esm-BPVwdH1y.js"
+    ],
+    "css": [
+      "assets/Index-kdzNEgqg.css"
+    ]
+  }
+}

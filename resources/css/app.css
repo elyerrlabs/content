@@ -1,0 +1,32 @@
+@import "@fortawesome/fontawesome-free/css/all.min.css";
+@import "@mdi/font/css/materialdesignicons.css";
+@import "notyf/notyf.min.css";
+
+@import "tailwindcss"  source(none);
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+|--------------------------------------------------------------------------
+| Tailwind Content Sources
+|--------------------------------------------------------------------------
+|
+| Register here the paths to any Blade, Vue, JavaScript, or other files
+| that use Tailwind CSS classes. Tailwind will scan these sources during
+| the build process and generate only the styles that are actually used.
+|
+| Add new paths as your application grows.
+|
+*/
+
+@source "../../../../resources/views/components/profile.blade.php";
+@source "../../../../resources/views/components/theme.blade.php";
+@source '../../../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source "../views/*.blade.php";
+@source "../views/layouts/*.blade.php";
+@source "../views/settings/*.blade.php";
+@source "../views/user/*.blade.php";
+@source "../js/components/*.vue";
+@source "../js/pages/Admin/*.vue";
+@source "../js/config/*.js";
+@source "../js/*.js";
