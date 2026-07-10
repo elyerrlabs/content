@@ -7,16 +7,63 @@
   {
     "name": "settings",
     "description": "Dedicated group for managing configuration permissions through services",
+    "services": []
+  },
+  {
+    "name": "developer",
+    "description": "Environment for developers to build, test, and deploy applications.",
     "services": [
       {
-        "name": "Elymod App",
-        "description": "Top level service for admin users for Elymod App",
+        "name": "Content Pages",
+        "description": "Page generator",
         "actions": [
           {
             "name": "full",
             "public": 0,
             "active": 1,
-            "api_key": 0
+            "api_key": 0,
+            "web": 1
+          },
+          {
+            "name": "view",
+            "public": 0,
+            "active": 1,
+            "api_key": 0,
+            "web": 1
+          },
+          {
+            "name": "create",
+            "public": 0,
+            "active": 1,
+            "api_key": 0,
+            "web": 1
+          },
+          {
+            "name": "update",
+            "public": 0,
+            "active": 1,
+            "api_key": 0,
+            "web": 1
+          },
+          {
+            "name": "destroy",
+            "public": 0,
+            "active": 1,
+            "api_key": 0,
+            "web": 1
+          }
+        ]
+      },
+      {
+        "name": "Content Seo",
+        "description": "Improves your website's visibility on search engines.",
+        "actions": [
+          {
+            "name": "full",
+            "public": 0,
+            "active": 1,
+            "api_key": 0,
+            "web": 1
           },
           {
             "name": "view",
@@ -25,7 +72,19 @@
             "api_key": 0
           },
           {
-            "name": "update",
+            "name": "create",
+            "public": 0,
+            "active": 1,
+            "api_key": 0
+          },
+          {
+            "name": "destroy",
+            "public": 0,
+            "active": 1,
+            "api_key": 0
+          },
+          {
+            "name": "reset",
             "public": 0,
             "active": 1,
             "api_key": 0
@@ -33,11 +92,6 @@
         ]
       }
     ]
-  },
-  {
-    "name": "developer",
-    "description": "Environment for developers to build, test, and deploy applications.",
-    "services": []
   },
   {
     "name": "member",

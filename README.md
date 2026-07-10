@@ -1,98 +1,110 @@
-# Elymod App
+# Content Module
 
-**Elymod App** is the official module skeleton used by OAuth2 Passport Server to generate Elymod modules.
+The **Content** module provides a complete content management layer for the platform. It centralizes page creation, SEO configuration, layouts, and search engine indexing while remaining fully integrated with Laravel and Blade.
 
-It provides a preconfigured application structure, development environment, and tooling required to build isolated modules that seamlessly integrate with the OAuth2 Passport Server ecosystem.
+Unlike traditional CMS solutions that replace Laravel's rendering engine, this module uses **Blade** as its native template engine, allowing developers to leverage the entire Laravel ecosystem without limitations.
 
-Designed for a plug-and-play experience, Elymod App allows developers to focus on business logic while the platform handles authentication, authorization, dependency isolation, and core services.
+## Features
 
----
+* **Page Builder**
 
-# Purpose
+  * Create and manage dynamic pages.
+  * Full support for Laravel Blade templates.
+  * Access to all Blade directives, components, layouts, and helpers.
+  * Route-based page rendering.
 
-Elymod App serves as the blueprint for all Elymod modules.
+* **SEO Management**
 
-When a new module is created, OAuth2 Passport Server generates a fresh module instance based on this skeleton, ensuring consistency across the ecosystem.
+  * Configure SEO metadata for authentication pages:
 
----
+    * Login
+    * Register
+    * Forgot Password
+    * Reset Password
+    * Email Verification
+  * Custom meta titles.
+  * Meta descriptions.
+  * Open Graph tags.
+  * Twitter Cards.
+  * Canonical URLs.
 
-# Creating Modules
+* **Custom Pages**
 
-Modules are generated directly from OAuth2 Passport Server:
+  * Create unlimited static or dynamic pages.
+  * Blade-powered templates.
+  * Custom routes.
+  * SEO configuration per page.
 
-```bash
-php artisan module:make ModuleName
-```
+* **Layout Management**
 
-This command creates a fully configured Elymod module ready for development.
+  * Create and edit reusable layouts.
+  * Shared headers, footers, and sections.
+  * Blade inheritance support.
+  * Flexible page composition.
 
----
+* **Search Engine Indexing**
 
-# Features
+  * Automatic sitemap generation.
+  * Search engine friendly URLs.
+  * Page indexing management.
+  * Robots configuration support.
 
-- Official Elymod module skeleton
-- Plug-and-play integration with OAuth2 Passport Server
-- Preconfigured development environment
-- Qasi-powered frontend tooling
-- Laravel-inspired project structure
-- Isolated module architecture
-- Independent routing, views, middleware, and configuration
-- Elyscope dependency isolation support
-- Enterprise-ready modular foundation
+* **Developer Friendly**
 
----
+  * Built entirely on Laravel.
+  * Native Blade rendering.
+  * Modular architecture.
+  * Easy to extend.
+  * Suitable for custom applications, portals, and enterprise projects.
 
-# Dependency Isolation
+## Why Blade?
 
-Elymod modules are designed to work alongside Elyscope, the dependency isolation layer of the Elymod ecosystem.
+Most CMS platforms introduce their own template language or rendering engine.
 
-Elyscope extends Composer by applying module-specific dependency scoping and namespace isolation, allowing multiple modules to use different versions of the same packages without causing conflicts.
+The Content module keeps everything inside Laravel, allowing developers to use:
 
-This approach helps ensure that modules remain self-contained and independent from both the host application and other installed modules.
+* Blade Components
+* Blade Directives
+* View Composers
+* Laravel Helpers
+* Middleware
+* Service Container
+* Dependency Injection
+* Live Laravel features without restrictions
 
----
+This makes it possible to build highly dynamic pages while maintaining a clean and familiar development workflow.
 
-# Architecture
+## Use Cases
 
-Each generated module owns its:
+* Corporate websites
+* Landing pages
+* Authentication pages
+* Legal pages
+* Marketing pages
+* Documentation
+* Custom portals
+* SaaS websites
+* Identity Server front-end
 
-- Routes
-- Controllers
-- Views
-- Middleware
-- Policies
-- Configuration
-- Assets
-- Dependencies
-- Business logic
+## Architecture
 
-while remaining isolated from the host application.
+The module is designed to work as an independent package within the platform's modular architecture.
 
-This ensures that modules can evolve independently without affecting platform stability.
+It integrates seamlessly with the routing system, view engine, SEO services, and indexing components while remaining completely decoupled from the application core.
 
----
+## Future Roadmap
 
-# Development Philosophy
+* Visual page editor
+* Page versioning
+* Media manager
+* Content blocks
+* Navigation menus
+* Localization support
+* Revision history
+* Scheduled publishing
+* Draft/Publish workflow
+* Theme support
 
-> The platform owns authentication and authorization.
->
-> Modules own business functionality.
+## License
 
-OAuth2 Passport Server provides the core platform services, while Elymod modules extend the platform through independent and portable functionality.
-
----
-
-# Ecosystem
-
-- OAuth2 Passport Server
-- Elymod
-- Elymod App
-- Elyscope
-- Laravel Runtime
-- Third-party Elymod Modules
-
----
-
-# License
-
-MIT License.
+This module is part of the modular Authorization Server platform and follows the project's licensing terms.

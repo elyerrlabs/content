@@ -5,6 +5,7 @@ import { $server } from "@/config/axios.js";
 import { errors } from "@/config/helpers.js";
 import { setupI18n, __ } from "@/config/locale.js";
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
+import "@/config/editor.js";
 
 setupI18n();
 window.__ = __;

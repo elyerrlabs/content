@@ -15,7 +15,5 @@ use Illuminate\Console\Scheduling\Schedule;
 
 return function (Schedule $schedule) {
 
-    // example schedule
-    $schedule->command('content:module:test-command')->everyMinute();
-
+    $schedule->command('content:module:restore:backup')->everyMinute();
 };

@@ -1,8 +1,9 @@
+@import "tailwindcss";
 @import "@fortawesome/fontawesome-free/css/all.min.css";
 @import "@mdi/font/css/materialdesignicons.css";
-@import "notyf/notyf.min.css";
-
-@import "tailwindcss"  source(none);
+@import "jodit/es2021/jodit.min.css";
+@import "jodit/es2021/jodit.min.css";
+@import "monaco-editor/min/vs/style.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -22,11 +23,6 @@
 @source "../../../../resources/views/components/profile.blade.php";
 @source "../../../../resources/views/components/theme.blade.php";
 @source '../../../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source "../views/*.blade.php";
-@source "../views/layouts/*.blade.php";
-@source "../views/settings/*.blade.php";
-@source "../views/user/*.blade.php";
-@source "../js/components/*.vue";
-@source "../js/pages/Admin/*.vue";
-@source "../js/config/*.js";
-@source "../js/*.js";
+@source "../**/*.blade.php";
+@source "../**/*.js";
+@source "../**/*.vue";

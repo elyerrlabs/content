@@ -1,7 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Content\App\Http\Controllers\SettingsController;
+use Content\App\Http\Controllers\Admin\SitemapController;
+use Content\App\Http\Controllers\Admin\SeoController;
+use Content\App\Http\Controllers\Admin\PoliciesController;
+use Content\App\Http\Controllers\Admin\LayoutController;
+use Content\App\Http\Controllers\Admin\PageController;
 
 /**
  * Register admin routes
@@ -9,18 +13,33 @@ use Content\App\Http\Controllers\SettingsController;
 
 Route::middleware("throttle:third-party:content:admin")->group(function () {
 
-    Route::get('/admin', [
-        \Content\App\Http\Controllers\AdminController::class,
-        'index'
-    ])->name('admin.index');
+    Route::post('/pages/generate-sitemap', [PageController::class, 'generateSitemapFile'])->name('pages.generate-sitemap');
+    Route::post('/pages/{page}/reset', [PageController::class, 'reset'])->name('pages.reset');
+    Route::resource('pages', PageController::class);
 
+
+    Route::get('layouts', [LayoutController::class, 'form'])->name('layouts.schema');
+    Route::put('layouts', [LayoutController::class, 'update'])->name('layouts.update');
+    Route::get('policies', [PoliciesController::class, 'form'])->name('policies.schema');
+    Route::get('seo', [SeoController::class, 'form'])->name('seo.schema');
 
 
     Route::group([
-        'prefix' => 'settings',
-        'as' => 'settings.'
+        'prefix' => 'sitemaps',
+        'as' => 'sitemaps.',
+        'middleware' => ['throttle:system:general:settings', 'password.confirm']
     ], function () {
-        Route::get('/', [SettingsController::class, 'index'])->name('index');
-        Route::get('/update', [SettingsController::class, 'update'])->name('update');
+
+        Route::get('/routes', [SitemapController::class, 'index'])->name('index');
+        Route::post('/routes', [SitemapController::class, 'updateMeta'])->name('store');
+        Route::delete('/routes/reset', [SitemapController::class, 'reset'])->name('reset');
+        Route::delete('/routes/{url}', [SitemapController::class, 'delete'])->name('delete');
+
+        Route::get('/robot', [SitemapController::class, 'robotForm'])->name('robot.form');
+        Route::post('/robot', [SitemapController::class, 'updateRobot'])->name('robot.update');
+
+        Route::get('/favicon', [SitemapController::class, 'faviconForm'])->name('favicon.form');
+        Route::post('/favicon', [SitemapController::class, 'updateFavicon'])->name('favicon.update');
+        Route::delete('/favicon/{path}', [SitemapController::class, 'deleteFavicon'])->name('favicon.delete');
     });
 });

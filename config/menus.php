@@ -203,6 +203,29 @@ return [
 
         ],
 
+
+        'developers' => [
+            "sitemap" => [
+                "name" => "Sitemap",
+                "route" => "module.content.admin.sitemaps.index",
+                "icon" => "mdi mdi-sitemap-outline",
+                "service" => "developer:content-seo"
+            ],
+            "page_creator" => [
+                "name" => "Pages",
+                "route" => "module.content.admin.pages.index",
+                "icon" => "mdi mdi-hammer-wrench",
+                "service" => "developer:content-pages"
+            ],
+            "legal" => [
+                'name' => 'Policies',
+                'route' => 'module.content.admin.policies.terms-and-conditions',
+                'icon' => "mdi mdi-file-sign",
+                'service' => "administrator:settings",
+            ],
+        ],
+
+
     ],
 
     /*
@@ -286,5 +309,86 @@ return [
         */
 
     ],
+
+
+    "sitemap_menus" => [
+        [
+            "id" => "list_of_pages",
+            "name" => "List of pages",
+            "route" => "module.content.admin.sitemaps.index",
+            "icon" => "mdi mdi-sitemap-outline",
+            'service' => "developer:content-seo",
+            "position" => 1
+        ],
+        [
+            "id" => "robot",
+            "name" => "Robot",
+            "route" => "module.content.admin.sitemaps.robot.form",
+            "icon" => "mdi mdi-robot-angry-outline",
+            'service' => "developer:content-seo",
+            "position" => 2
+        ]
+    ],
+
+    "pages" => [
+        [
+            'id' => 'list_of_pages',
+            'name' => 'List of pages',
+            'route' => 'module.content.admin.pages.index',
+            'icon' => 'mdi mdi-file-document-outline',
+            'service' => "developer:content-pages:view",
+            "position" => 1
+        ],
+        [
+            'id' => 'layouts',
+            'name' => 'Layouts',
+            'route' => 'module.content.admin.layouts.schema',
+            'icon' => 'mdi mdi-file-document-outline',
+            'service' => "developer:content-pages:view",
+            "position" => 2
+        ],
+        [
+            'id' => 'static_pages',
+            'name' => 'Static pages',
+            'route' => 'module.content.admin.seo.schema',
+            'icon' => 'mdi mdi-file-document-outline',
+            'service' => "developer:content-pages:view",
+            "position" => 3
+        ],
+        [
+            'id' => 'policies',
+            'name' => 'Policies',
+            'route' => 'module.content.admin.policies.schema',
+            'icon' => 'mdi mdi-file-document-outline',
+            'service' => "developer:content-pages:view",
+            "position" => 4
+        ],
+        [
+            'id' => 'sitemap_urls',
+            'name' => 'Sitemap URLs',
+            'route' => 'module.content.admin.sitemaps.index',
+            'icon' => 'mdi mdi-sitemap',
+            'service' => 'developer:content-seo:view',
+            "position" => 5
+        ],
+        [
+            'id' => 'robots_txt',
+            'name' => 'Robots.txt',
+            'route' => 'module.content.admin.sitemaps.robot.form',
+            'icon' => 'mdi mdi-robot',
+            'service' => 'developer:content-seo:view',
+            "position" => 6
+        ],
+        [
+            'id' => 'favicon',
+            'name' => 'Favicon',
+            'route' => 'module.content.admin.sitemaps.favicon.form',
+            'icon' => 'mdi mdi-upload-circle-outline',
+            'service' => 'developer:content-seo:view',
+            "position" => 7
+        ],
+    ]
+
+
 
 ];

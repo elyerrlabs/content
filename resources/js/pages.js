@@ -3,6 +3,7 @@ import { $notify } from "@/config/notify.js";
 import { setupI18n, __ } from "@/config/locale.js";
 import { $server } from "@/config/axios.js";
 import $ from 'jquery';
+import "@/config/editor.js";
 
 window.$notify = $notify;
 window.$server = $server;

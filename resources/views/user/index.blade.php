@@ -3,7 +3,7 @@
 @push('head')
     <title>{{ __('Module Dashboard') }} | {{ config('app.name') }}</title>
     <meta name="description" content="User dashboard example for module base template">
-
+    @module_vite(['resources/css/app.css', 'resources/js/app.js'])
     <!-- Google Fonts Inter -->
     <link nonce="{{ $nonce }}"
         href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap"
