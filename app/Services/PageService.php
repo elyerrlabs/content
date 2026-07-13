@@ -13,10 +13,23 @@ use Illuminate\Support\Facades\File;
 final class PageService
 {
 
+    /**
+     * Schema
+     * @var string
+     */
     protected $schema;
 
-
+    /**
+     * real path
+     * @var string
+     */
     protected $realPath;
+
+    /**
+     * Repository
+     * @var string
+     */
+    protected $repository;
 
 
     /**
@@ -25,6 +38,7 @@ final class PageService
      */
     public function __construct(protected PageRepository $pageRepository, protected SitemapService $SitemapService)
     {
+        $this->repository = __DIR__ . "/../../resources/views/schemas";
         $this->schema = base_path('resources/views/pages/layouts/schema.blade.php');
         $this->realPath = base_path('resources/views/pages');
 
@@ -383,5 +397,28 @@ final class PageService
                 ->toArray(),
             'page' => $page
         ], 500);
+    }
+
+    /**
+     * Copy files
+     * @return void
+     */
+    public function copyFiles()
+    {
+        $scanDir = scandir($this->repository);
+
+
+        foreach ($scanDir as $key => $file) {
+            if (in_array($file, ['.', '..'])) {
+                continue;
+            }
+
+            $repo = $this->repository . "/$file";
+            $target = $this->realPath . "/layouts/$file";
+
+            if (!file_exists($target)) {
+                copy($repo, $target);
+            }
+        }
     }
 }
