@@ -14,8 +14,8 @@
     "jquery": "^4.0.0",
     "monaco-editor": "^0.53.0",
     "notyf": "^3.10.0",
-    "vue": "^3.5.38",
     "tailwindcss": "^4.3.0",
+    "vue": "^3.5.38",
     "vue-i18n": "^11.1.11"
   },
   "devDependencies": {

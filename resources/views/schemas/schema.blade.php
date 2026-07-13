@@ -1,4 +1,4 @@
-@extends('layouts.pages')
+@extends('Content::layouts.template')
 
 @push('head')
     <title>{{ config('app.name', 'Oauth2 Passport Server') }}</title>
@@ -61,9 +61,7 @@
             - @csrf
 
             ✅ PHP logic
-            ✅ HTML 
-            ✅ Axios ($server)
-            ✅ jQuery ($)
+            ✅ HTML  
             ✅ TailwindCSS
 
             ------------------------------------------------

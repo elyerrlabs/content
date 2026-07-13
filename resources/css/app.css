@@ -4,6 +4,8 @@
 @import "jodit/es2021/jodit.min.css";
 @import "jodit/es2021/jodit.min.css";
 @import "monaco-editor/min/vs/style.css";
+@import "@mdi/font/css/materialdesignicons.css"; 
+
 
 @custom-variant dark (&:where(.dark, .dark *));
 
