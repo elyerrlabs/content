@@ -69,18 +69,17 @@ final class RouteServiceProvider extends Provider
                         'module_path' => $this->moduleBasePath() // DO NOT REMOVE
                     ], fn() => require $path . '/web.php'); // DO NOT REMOVE  
                 }
-
-                if (file_exists($path . '/public.php')) {
-                    Route::group([
-                        'as' => 'public.',
-                        'middleware' => ['web'],
-                        'module' => $this->generateViewPrefix(), // DO NOT REMOVE
-                        'config_key' => $this->getConfigKey(), // DO NOT REMOVE
-                        'module_type' => 'third-party', // DO NOT REMOVE
-                        'module_path' => $this->moduleBasePath() // DO NOT REMOVE
-                    ], fn() => require $path . '/public.php');// DO NOT REMOVE
-                }
             }
         );
+
+        if (file_exists($path . '/public.php')) {
+            Route::group([
+                'middleware' => ['web'],
+                'module' => $this->generateViewPrefix(), // DO NOT REMOVE
+                'config_key' => $this->getConfigKey(), // DO NOT REMOVE
+                'module_type' => 'third-party', // DO NOT REMOVE
+                'module_path' => $this->moduleBasePath() // DO NOT REMOVE
+            ], fn() => require $path . '/public.php');// DO NOT REMOVE
+        }
     }
 }
