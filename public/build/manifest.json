@@ -716,12 +716,31 @@
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-Cd7kvzNN.css",
+    "file": "assets/app-CnulJeuG.css",
     "name": "app",
     "names": [
       "app.css"
     ],
     "src": "resources/css/app.css",
+    "isEntry": true,
+    "assets": [
+      "assets/fa-brands-400-BK5CuonO.woff2",
+      "assets/fa-regular-400-WLfxSHV3.woff2",
+      "assets/fa-solid-900-Iz_TytpP.woff2",
+      "assets/fa-v4compatibility-CMhGCN2W.woff2",
+      "assets/materialdesignicons-webfont-CSr8KVlo.eot",
+      "assets/materialdesignicons-webfont-Dp5v-WZN.woff2",
+      "assets/materialdesignicons-webfont-PXm3-2wK.woff",
+      "assets/materialdesignicons-webfont-B7mPwVP_.ttf"
+    ]
+  },
+  "resources/css/pages.css": {
+    "file": "assets/pages-DgDyG5Mq.css",
+    "name": "pages",
+    "names": [
+      "pages.css"
+    ],
+    "src": "resources/css/pages.css",
     "isEntry": true,
     "assets": [
       "assets/fa-brands-400-BK5CuonO.woff2",
