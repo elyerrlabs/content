@@ -20,11 +20,10 @@ class PageController extends WebController
      * Render pages
      * @param string $locale
      * @param string $slug
-     * @return \Illuminate\Contracts\View\View
+     * @return \Illuminate\Contracts\View\View|\Illuminate\Http\RedirectResponse
      */
     public function page(string $locale = 'en', string $slug = '')
     {
-       // dd($locale, $slug);
         return $this->pageService->renderPages($locale, $slug);
     }
 }

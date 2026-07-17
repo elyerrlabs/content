@@ -135,10 +135,12 @@ final class PageService
      * @param string $lang
      * @param string $slug
      * @throws ReportError
-     * @return \Illuminate\Contracts\View\View
+     * @return \Illuminate\Contracts\View\View|\Illuminate\Http\RedirectResponse
      */
     public function renderPages(string $lang = 'en', string $slug = '')
     {
+        $user = request()->user();
+
         // Fixed slug
         $slug = empty($slug) && !in_array($lang, array_keys(config('app.langs'))) ? $lang : $slug;
         // Fixed lang support
@@ -170,6 +172,14 @@ final class PageService
 
         if (!file_exists($path)) {
             throw new ReportError(__('Page not found'), 404);
+        }
+
+        $currentLang = !empty($user) ? $user->lang : app()->getLocale();
+
+        // Redirect current lang
+        if ($currentLang != $lang) {
+            $page = $page->localize();
+            return redirect()->route('pages', ['locale' => $currentLang, 'slug' => $page->slug]);
         }
 
         return view()->file($path);
@@ -323,6 +333,26 @@ final class PageService
             }
         }
 
+        // Customize calculated field (path) , extract translatable fields first
+        $fields = extractTranslationsFields(new Page(), $data, true);
+
+        // Create path for translatable fields
+        $paths = [];
+        if (isset($fields['langs'])) {
+            foreach ($fields['langs'] as $lang) {
+                $paths["path_$lang"] = $this->publishedPathGenerate($data['slug'] . "_" . $lang);
+            }
+        }
+
+        // Create translate fields if it is does not exist
+        $modelData = $model->toArray();
+        foreach ($paths as $key => $path) {
+            if (!isset($modelData[$key])) {
+                dd(33);
+                $data[$key] = $path;
+            }
+        }
+
         // Fixed default slug
         $slug = isset($data['slug']) ? Str::slug($data['slug']) : $model->slug;
 
@@ -372,6 +402,8 @@ final class PageService
                 }
             }
         }
+
+        // verificar path si no existen crearlos
 
         // Sync translations
         syncTranslations($model, $data);
