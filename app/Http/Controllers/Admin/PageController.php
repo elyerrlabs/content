@@ -7,6 +7,8 @@ use Content\App\Jobs\SitemapIndexJob;
 use Content\App\Services\PageService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Content\App\Models\Page;
+use Content\App\Rules\UniqueTranslation;
 
 final class PageController extends WebController
 {
@@ -45,10 +47,10 @@ final class PageController extends WebController
         $pageId = $page->id ?? null;
 
         $this->validate($request, [
-            'name' => ['required'],
+            'name' => ['required', new UniqueTranslation(new Page())],
             'slug' => [
                 function ($attribute, $value, $fail) use ($pageId) {
-                    $query = DB::table('pages');
+                    $query = DB::table('content_pages');
 
                     if ($pageId) {
                         $query->where('id', '!=', $pageId);
@@ -78,7 +80,7 @@ final class PageController extends WebController
 
         $page = $this->pageService->create($request->toArray());
 
-        return redirect()->route('admin.pages.edit', ['page' => $page->id])->with('status', __('Page creation successfully'));
+        return redirect()->route('module.content.admin.pages.edit', ['page' => $page->id])->with('status', __('Page creation successfully'));
     }
 
     /**
@@ -114,7 +116,10 @@ final class PageController extends WebController
         $page = $this->pageService->edit($id);
 
         return view('Content::admin.pages.edit', compact('page'), [
-            'routes' => resolveInertiaRoutes(config('menus.pages'))
+            'routes' => resolveInertiaRoutes(config('menus.pages')),
+            'edit' => route("module.content.admin.pages.edit", [
+                'page' => $page->id
+            ])
         ]);
     }
 
@@ -127,6 +132,38 @@ final class PageController extends WebController
      */
     public function update(Request $request, string $id)
     {
+        $this->validate($request, [
+            'name' => ['required', new UniqueTranslation(new Page(), $id)],
+            'slug' => [
+                function ($attribute, $value, $fail) use ($id) {
+                    $query = DB::table('content_pages');
+
+                    if ($id) {
+                        $query->where('id', '!=', $id);
+                    }
+
+                    if (empty($value)) {
+                        $exists = $query
+                            ->where(function ($q) {
+                                $q->whereNull('slug')
+                                    ->orWhere('slug', '');
+                            })
+                            ->exists();
+
+                        if ($exists) {
+                            $fail('Only one page without a slug (landing page) is allowed.');
+                        }
+
+                        return;
+                    }
+
+                    if ($query->where('slug', $value)->exists()) {
+                        $fail('The slug has already been taken.');
+                    }
+                }
+            ]
+        ]);
+
         $this->pageService->update($id, $request->toArray());
 
         return back()->with('status', __('Page saved successfully'));

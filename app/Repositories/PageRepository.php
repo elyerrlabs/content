@@ -2,9 +2,6 @@
 
 namespace Content\App\Repositories;
 use Content\App\Models\Page;
- 
-
-
 
 final class PageRepository
 {
@@ -47,13 +44,16 @@ final class PageRepository
     }
 
     /**
-     * update
+     * Update
      * @param Page $page
      * @param array $data
-     * @return bool|int
+     * @return Page
      */
     public function update(Page $page, array $data)
     {
-        return $page->update($data);
+        $page->fill($data);
+        $page->push();
+
+        return $page;
     }
 }

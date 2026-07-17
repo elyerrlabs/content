@@ -27,6 +27,6 @@ return [
   */
 
   // Example morph models
-  //"elymod_model_tag_name" => "\Content\App\Models\Content",
+  "module_content_page" => \Content\App\Models\Page::class,
 
 ];

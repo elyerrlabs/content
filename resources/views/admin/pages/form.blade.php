@@ -1,48 +1,45 @@
 <button type="button" id="openCreateModalBtn"
-    class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 shadow-sm">
-    <i class="mdi mdi-plus-circle-outline mr-2"></i>
+    class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+    </svg>
     {{ __('Create New Page') }}
 </button>
 
+<!-- Modal -->
 <div id="createPageModal"
     class="fixed inset-0 z-50 {{ ($openCreateModal ?? false) || $errors->any() ? '' : 'hidden' }} overflow-y-auto"
-    aria-labelledby="create-page-modal-title" role="dialog" aria-modal="true">
-    <div class="flex min-h-screen items-center justify-center px-4 py-6 text-center">
-        <div id="modalBackdrop" class="absolute inset-0 bg-slate-900/60 transition-opacity" aria-hidden="true"></div>
+    role="dialog" aria-modal="true">
 
-        <div
-            class="relative w-full max-w-md overflow-hidden rounded-2xl border border-gray-200 bg-white text-left shadow-2xl dark:border-gray-700 dark:bg-gray-800">
-            <div class="border-b border-gray-200 px-6 py-5 dark:border-gray-700">
-                <div class="flex items-start justify-between gap-4">
-                    <div>
-                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-blue-600 dark:text-blue-400">
-                            {{ __('Page manager') }}
-                        </p>
-                        <h3 id="create-page-modal-title"
-                            class="mt-2 text-xl font-semibold text-gray-900 dark:text-white">
-                            {{ __('Create page') }}
-                        </h3>
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            {{ __('Enter the page name to create a new page record.') }}
-                        </p>
-                    </div>
+    <div class="fixed inset-0 bg-black/50" id="modalBackdrop"></div>
 
-                    <button type="button" id="closeModalBtn"
-                        class="inline-flex h-10 w-10 items-center justify-center rounded-xl text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200">
-                        <i class="mdi mdi-close text-xl"></i>
-                    </button>
-                </div>
+    <div class="flex min-h-screen items-center justify-center p-4">
+        <div class="relative w-full max-w-2xl rounded-lg bg-white shadow-xl dark:bg-gray-800">
+
+            <!-- Header -->
+            <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                    {{ __('Create New Page') }}
+                </h3>
+                <button type="button" id="closeModalBtn"
+                    class="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
             </div>
 
+            <!-- Form -->
             <form id="createPageForm" method="POST" action="{{ route('module.content.admin.pages.store') }}"
-                class="space-y-5 px-6 py-6">
+                class="p-6">
                 @csrf
 
+                <!-- Errors -->
                 @if ($errors->any())
                     <div
-                        class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
-                        <p class="font-semibold">{{ __('Please correct the following errors:') }}</p>
-                        <ul class="mt-2 list-disc space-y-1 pl-5">
+                        class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/50 dark:text-red-400">
+                        <ul class="list-disc pl-4">
                             @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
                             @endforeach
@@ -50,40 +47,117 @@
                     </div>
                 @endif
 
-                <div>
-                    <label for="page_name" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        {{ __('Page name') }}
-                    </label>
-                    <input id="page_name" name="name" type="text" value="{{ old('name') }}"
-                        placeholder="{{ __('Example: About us') }}"
-                        class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-gray-600 dark:bg-gray-900 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-900/40">
-                    @error('name')
-                        <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                    @enderror
+                <!-- Tabs -->
+                <div class="mb-4">
+                    <!-- Tab Buttons -->
+                    <div class="flex gap-8 border-b border-gray-200 dark:border-gray-700">
+                        <button type="button" class="tab-btn active" data-tab="en">
+                            🇬🇧 {{ __('English') }}
+                        </button>
+                        <button type="button" class="tab-btn" data-tab="es">
+                            🇪🇸 {{ __('Spanish') }}
+                        </button>
+                        <button type="button" class="tab-btn" data-tab="fr">
+                            🇫🇷 {{ __('French') }}
+                        </button>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div class="mt-4">
+                        <!-- English -->
+                        <div class="tab-content" data-tab="en">
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        {{ __('Page Name') }}
+                                    </label>
+                                    <input type="text" name="name" id="page_name" value="{{ old('name') }}"
+                                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                                    @error('name')
+                                        <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        {{ __('Page Slug') }}
+                                    </label>
+                                    <input type="text" name="slug" id="page_slug" value="{{ old('slug') }}"
+                                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                                    @error('slug')
+                                        <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Spanish -->
+                        <div class="tab-content hidden" data-tab="es">
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        {{ __('Page Name') }} <span
+                                            class="text-xs text-gray-500">({{ __('Spanish') }})</span>
+                                    </label>
+                                    <input type="text" name="name_es" id="page_name_es" value="{{ old('name_es') }}"
+                                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                                    @error('name_es')
+                                        <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        {{ __('Page Slug') }} <span
+                                            class="text-xs text-gray-500">({{ __('Spanish') }})</span>
+                                    </label>
+                                    <input type="text" name="slug_es" id="page_slug_es" value="{{ old('slug_es') }}"
+                                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                                    @error('slug_es')
+                                        <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- French -->
+                        <div class="tab-content hidden" data-tab="fr">
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        {{ __('Page Name') }} <span
+                                            class="text-xs text-gray-500">({{ __('French') }})</span>
+                                    </label>
+                                    <input type="text" name="name_fr" id="page_name_fr" value="{{ old('name_fr') }}"
+                                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                                    @error('name_fr')
+                                        <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        {{ __('Page Slug') }} <span
+                                            class="text-xs text-gray-500">({{ __('French') }})</span>
+                                    </label>
+                                    <input type="text" name="slug_fr" id="page_slug_fr"
+                                        value="{{ old('slug_fr') }}"
+                                        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                                    @error('slug_fr')
+                                        <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div>
-                    <label for="page_slug" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        {{ __('Page Slug') }}
-                    </label>
-                    <input id="page_slug" name="slug" type="text" value="{{ old('slug') }}"
-                        placeholder="{{ __('Example: page-2') }}"
-                        class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-gray-600 dark:bg-gray-900 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-900/40">
-                    @error('slug')
-                        <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div class="flex items-center justify-end gap-3 border-t border-gray-200 pt-5 dark:border-gray-700">
+                <!-- Footer -->
+                <div class="mt-6 flex justify-end gap-2 border-t border-gray-200 pt-4 dark:border-gray-700">
                     <button type="button" id="cancelModalBtn"
-                        class="inline-flex items-center rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">
+                        class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
                         {{ __('Cancel') }}
                     </button>
-
                     <button type="submit"
-                        class="inline-flex items-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900/50">
-                        <i class="mdi mdi-plus-circle-outline mr-2 text-lg"></i>
-                        {{ __('Create page') }}
+                        class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                        {{ __('Create Page') }}
                     </button>
                 </div>
             </form>
@@ -93,162 +167,98 @@
 
 @push('js')
     <script nonce="{{ $nonce }}">
-        document.addEventListener('DOMContentLoaded', () => {
-            (function() {
-                'use strict';
+        document.addEventListener("DOMContentLoaded", function() {
 
-                // Elementos del DOM
-                const modal = document.getElementById('createPageModal');
-                const backdrop = document.getElementById('modalBackdrop');
-                const closeBtn = document.getElementById('closeModalBtn');
-                const cancelBtn = document.getElementById('cancelModalBtn');
-                const openBtn = document.getElementById('openCreateModalBtn');
-                const form = document.getElementById('createPageForm');
 
-                // Función para cerrar el modal
-                window.closeCreatePageModal = function() {
-                    if (modal) {
-                        modal.classList.add('hidden');
-                    }
-                };
+            const modal = $('#createPageModal');
+            const backdrop = $('#modalBackdrop');
+            const openBtn = $('#openCreateModalBtn');
+            const closeBtn = $('#closeModalBtn');
+            const cancelBtn = $('#cancelModalBtn');
+            const form = $('#createPageForm');
 
-                // Función para abrir el modal
-                window.openCreatePageModal = function() {
-                    if (modal) {
-                        modal.classList.remove('hidden');
-                    }
-                };
+            // Open modal
+            openBtn.on('click', function(e) {
+                e.preventDefault();
+                modal.removeClass('hidden');
+            });
 
-                // Abrir modal con el botón principal
-                if (openBtn) {
-                    openBtn.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        window.openCreatePageModal();
-                    });
+            // Close modal
+            function closeModal() {
+                modal.addClass('hidden');
+            }
+
+            closeBtn.on('click', closeModal);
+            cancelBtn.on('click', closeModal);
+            backdrop.on('click', closeModal);
+
+            $(document).on('keydown', function(e) {
+                if (e.key === 'Escape' && !modal.hasClass('hidden')) {
+                    closeModal();
                 }
+            });
 
-                // Cerrar con el botón X
-                if (closeBtn) {
-                    closeBtn.addEventListener('click', closeCreatePageModal);
-                }
+            // Tabs
+            $('.tab-btn').on('click', function() {
+                const tab = $(this).data('tab');
 
-                // Cerrar con el botón Cancelar
-                if (cancelBtn) {
-                    cancelBtn.addEventListener('click', closeCreatePageModal);
-                }
+                // Update button styles
+                $('.tab-btn').removeClass(
+                        'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400')
+                    .addClass(
+                        'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                    );
 
-                // Cerrar con el backdrop
-                if (backdrop) {
-                    backdrop.addEventListener('click', closeCreatePageModal);
-                }
+                $(this).removeClass(
+                        'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                    )
+                    .addClass('border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400');
 
-                // Cerrar con la tecla ESC
-                document.addEventListener('keydown', function(event) {
-                    if (event.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
-                        closeCreatePageModal();
-                    }
-                });
+                // Show/hide content
+                $('.tab-content').addClass('hidden');
+                $('.tab-content[data-tab="' + tab + '"]').removeClass('hidden');
+            });
 
-                // Validación del formulario antes de enviar
-                if (form) {
-                    form.addEventListener('submit', function(event) {
-                        const pageName = document.getElementById('page_name');
-                        const pageSlug = document.getElementById('page_slug');
-                        let hasError = false;
+            // Auto-generate slugs
+            const mappings = [{
+                    name: '#page_name',
+                    slug: '#page_slug'
+                },
+                {
+                    name: '#page_name_es',
+                    slug: '#page_slug_es'
+                },
+                {
+                    name: '#page_name_fr',
+                    slug: '#page_slug_fr'
+                },
+            ];
 
-                        // Remover mensajes de error existentes
-                        const existingErrors = form.querySelectorAll('.dynamic-error');
-                        existingErrors.forEach(error => error.remove());
+            mappings.forEach(function(m) {
+                const nameInput = $(m.name);
+                const slugInput = $(m.slug);
 
-                        // Validar nombre
-                        if (pageName && !pageName.value.trim()) {
-                            showError(pageName, '{{ __('The page name is required.') }}');
-                            hasError = true;
-                        }
+                if (nameInput.length && slugInput.length) {
+                    let auto = true;
 
-                        // Validar slug (opcional pero recomendado)
-                        if (pageSlug && pageSlug.value.trim() && !isValidSlug(pageSlug.value.trim())) {
-                            showError(pageSlug,
-                                '{{ __('The slug must contain only letters, numbers, and hyphens.') }}'
-                                );
-                            hasError = true;
-                        }
-
-                        if (hasError) {
-                            event.preventDefault();
-                        }
-                    });
-                }
-
-                // Función para mostrar errores dinámicamente
-                function showError(inputElement, message) {
-                    if (!inputElement) return;
-
-                    // Crear elemento de error
-                    const errorDiv = document.createElement('p');
-                    errorDiv.className = 'mt-2 text-sm text-red-600 dark:text-red-400 dynamic-error';
-                    errorDiv.textContent = message;
-
-                    // Insertar después del input
-                    inputElement.parentNode.appendChild(errorDiv);
-
-                    // Agregar clase de error al input
-                    inputElement.classList.add('border-red-500', 'dark:border-red-500');
-
-                    // Remover error al empezar a escribir
-                    inputElement.addEventListener('input', function() {
-                        errorDiv.remove();
-                        inputElement.classList.remove('border-red-500', 'dark:border-red-500');
-                    }, {
-                        once: true
-                    });
-                }
-
-                // Función para validar slug
-                function isValidSlug(slug) {
-                    const slugRegex = /^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$/;
-                    return slugRegex.test(slug);
-                }
-
-                // Prevenir propagación de clics en el modal content
-                const modalContent = modal ? modal.querySelector('.relative') : null;
-                if (modalContent) {
-                    modalContent.addEventListener('click', function(event) {
-                        event.stopPropagation();
-                    });
-                }
-
-                // Auto-generar slug desde el nombre (opcional)
-                const pageNameInput = document.getElementById('page_name');
-                const pageSlugInput = document.getElementById('page_slug');
-
-                if (pageNameInput && pageSlugInput) {
-                    // Generar slug automáticamente cuando el usuario escribe el nombre
-                    // y el slug está vacío o fue generado automáticamente
-                    let autoGenerated = true;
-
-                    pageSlugInput.addEventListener('input', function() {
-                        autoGenerated = false;
+                    slugInput.on('input', function() {
+                        auto = false;
                     });
 
-                    pageNameInput.addEventListener('input', function() {
-                        if (autoGenerated && pageNameInput.value.trim()) {
-                            const generatedSlug = generateSlug(pageNameInput.value.trim());
-                            pageSlugInput.value = generatedSlug;
+                    nameInput.on('input', function() {
+                        if (auto && nameInput.val().trim()) {
+                            const slug = nameInput.val().trim()
+                                .toLowerCase()
+                                .normalize('NFD')
+                                .replace(/[\u0300-\u036f]/g, '')
+                                .replace(/[^a-z0-9\s-]/g, '')
+                                .replace(/\s+/g, '-')
+                                .replace(/-+/g, '-');
+                            slugInput.val(slug);
                         }
                     });
                 }
-
-                // Función para generar slug a partir de texto
-                function generateSlug(text) {
-                    return text
-                        .toLowerCase()
-                        .replace(/[^\w\s-]/g, '') // Eliminar caracteres especiales
-                        .replace(/\s+/g, '-') // Reemplazar espacios con guiones
-                        .replace(/--+/g, '-') // Reemplazar múltiples guiones
-                        .trim();
-                }
-            })();
+            });
         });
     </script>
 @endpush

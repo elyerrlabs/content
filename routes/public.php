@@ -28,5 +28,5 @@ Route::middleware(['throttle:system:general:public'])->group(function () {
     });
 
     // Load dinamic pages
-    Route::get('/{slug?}', [PageController::class, 'page'])->name('pages');
+    Route::get('/{locale?}/{slug?}', [PageController::class, 'page'])->name('pages');
 });

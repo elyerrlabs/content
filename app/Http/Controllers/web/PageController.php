@@ -17,13 +17,14 @@ class PageController extends WebController
     }
 
     /**
-     * Summary of homePage
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
+     * Render pages
+     * @param string $locale
+     * @param string $slug
+     * @return \Illuminate\Contracts\View\View
      */
-    public function page(string $slug = '')
+    public function page(string $locale = 'en', string $slug = '')
     {
-        $page = $this->pageService->findPage($slug);
-
-        return view()->file($page->path);
+       // dd($locale, $slug);
+        return $this->pageService->renderPages($locale, $slug);
     }
 }

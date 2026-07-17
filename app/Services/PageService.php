@@ -2,6 +2,7 @@
 
 namespace Content\App\Services;
 
+use App\Contracts\Translatable;
 use Elyerr\ApiResponse\Exceptions\ReportError;
 use Content\App\Models\Page;
 use Content\App\Services\SitemapService;
@@ -9,6 +10,7 @@ use Content\App\Repositories\PageRepository;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\DB;
 
 final class PageService
 {
@@ -129,10 +131,55 @@ final class PageService
     }
 
     /**
-     * Edit
+     * Render page
+     * @param string $lang
+     * @param string $slug
+     * @throws ReportError
+     * @return \Illuminate\Contracts\View\View
+     */
+    public function renderPages(string $lang = 'en', string $slug = '')
+    {
+        // Fixed slug
+        $slug = empty($slug) && !in_array($lang, array_keys(config('app.langs'))) ? $lang : $slug;
+        // Fixed lang support
+        $lang = in_array($lang, array_keys(config('app.langs'))) ? $lang : 'en';
+
+        $query = $this->pageRepository->query();
+
+        $query->where('is_published', true);
+
+        if ($lang === 'en') {
+            $query->where('slug', strtolower($slug));
+        } else {
+            $query->whereHas('translations', function ($query) use ($lang, $slug) {
+                $query->where('attribute', 'slug')
+                    ->where('locale', $lang)
+                    ->whereRaw('LOWER(value) = ?', [strtolower($slug)]);
+            });
+        }
+
+        $page = $query->first();
+
+        if (!$page) {
+            throw new ReportError(__('Page not found'), 404);
+        }
+
+        $path = $lang === 'en'
+            ? $page->path
+            : $page->{"path_{$lang}"};
+
+        if (!file_exists($path)) {
+            throw new ReportError(__('Page not found'), 404);
+        }
+
+        return view()->file($path);
+    }
+
+    /**
+     * Show content to show
      * @param string $id
      * @throws ReportError
-     * @return object|Page|\stdClass|null
+     * @return Page
      */
     public function edit(string $id)
     {
@@ -142,23 +189,25 @@ final class PageService
             throw new ReportError(__('Page not found'), 404);
         }
 
-        if ($page->is_draft) {
+        // Extract original name
+        $fname = str_replace('.blade.php', '', basename($page->path));
 
-            $drafPath = $this->draftPathGenerate($page->slug);
+        // Fixed file name to support langs
+        $fileName = request()->input('lang', 'en') == 'en' ? $fname : $fname . "_" . request()->lang;
 
-            if (!File::exists($drafPath)) {
-                File::copy($page->path, $drafPath);
-            }
+        // Generate draft path
+        $drafPath = $this->draftPathGenerate($fileName);
 
-            $page->content = file_get_contents($drafPath);
-
-            $page->path = $drafPath;
-
-        } else {
-            $publishedPath = $this->publishedPathGenerate($page->slug);
-
-            $page->content = file_get_contents($publishedPath);
+        // Check the file exist, so create one
+        if (!file_exists($drafPath)) {
+            copy($page->path, $drafPath);
         }
+
+        // Add file content to the object
+        $page->content = file_get_contents($drafPath);
+
+        // Replace default paht for draft path
+        $page->path = $drafPath;
 
         return $page;
     }
@@ -181,30 +230,75 @@ final class PageService
      */
     public function create(array $data)
     {
-        $slug = Str::slug($data['slug']);
+        // Create slug
+        $data['slug'] = Str::slug($data['slug']);
 
-        if (!File::exists($this->realPath)) {
+        //Check directory
+        if (!file_exists($this->realPath)) {
             File::makeDirectory($this->realPath, 0755, true);
         }
 
-        $path = rtrim($this->realPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . "published" . DIRECTORY_SEPARATOR . $slug . '.blade.php';
+        // Create path
+        $data['path'] = $this->publishedPathGenerate($data['slug']);
 
-        if (!File::exists($this->schema)) {
+        // Checking schema
+        if (!file_exists($this->schema)) {
             throw new \Exception('Schema template not found');
         }
 
-        if (!File::exists($path)) {
-            File::copy($this->schema, $path);
+        // Customize calculated field (path) , extract translatable fields first
+        $fields = extractTranslationsFields(new Page(), $data, true);
+
+        // Create path for translatable fields
+        if (isset($fields['langs'])) {
+            foreach ($fields['langs'] as $lang) {
+                $data["path_$lang"] = $this->publishedPathGenerate($data['slug'] . "_" . $lang);
+
+                // Add key for draft file path for only file draft creation
+                $data["draft_path_$lang"] = $this->draftPathGenerate($data['slug'] . "_" . $lang);
+            }
+            // Add default path to the draft paths files
+            $data["draft_path_en"] = $this->draftPathGenerate($data['slug']);
         }
 
-        return $this->pageRepository->create([
-            'name' => $data['name'],
-            'slug' => $slug,
-            'path' => $path,
-            'is_draft' => $data['is_draft'] ?? true,
-            'is_published' => $data['is_draft'] ?? false,
-            'index' => $data['index'] ?? false
-        ]);
+        $page = DB::transaction(function () use ($data) {
+
+            // Create object
+            $page = $this->pageRepository->create([
+                'name' => $data['name'],
+                'slug' => $data['slug'],
+                'path' => $data['path'],
+                'is_draft' => true,
+                'is_published' => false,
+                'index' => false
+            ]);
+
+            // Create files for published directory
+            foreach ($data as $key => $value) {
+                if (str_starts_with($key, 'path')) {
+                    if (!file_exists($value)) {
+                        copy($this->schema, $value);
+                    }
+                }
+            }
+
+            // Create files for draft directory
+            foreach ($data as $key => $value) {
+                if (str_starts_with($key, 'draft_path')) {
+                    if (!file_exists($value)) {
+                        copy($this->schema, $value);
+                    }
+                }
+            }
+
+            // Sync all translations fields
+            syncTranslations($page, $data);
+
+            return $page;
+        });
+
+
+        return $page;
     }
 
     /**
@@ -222,45 +316,65 @@ final class PageService
         if (empty($model)) {
             throw new ReportError(__("Error Processing Request"), 400);
         }
-
-        $newSlug = Str::slug($data['slug'] ?? $model->slug);
-        $currentDraftPath = $this->draftPathGenerate($model->slug);
-        $newDraftPath = $this->draftPathGenerate($newSlug);
-        $publishedPath = $this->publishedPathGenerate($newSlug);
-        $content = $data['content'] ?? null;
-        $isDraft = filter_var($data['is_draft'] ?? true, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-        $isDraft = $isDraft ?? false;
-
-        if (!File::exists($currentDraftPath)) {
-            if (File::exists($this->schema)) {
-                File::copy($this->schema, $currentDraftPath);
+        // Fixed slugs for translatable attributos
+        foreach ($data as $key => $value) {
+            if (str_starts_with($key, "slug_")) {
+                $data[$key] = Str::slug($value);
             }
         }
 
-        if ($currentDraftPath !== $newDraftPath && File::exists($currentDraftPath)) {
-            File::move($currentDraftPath, $newDraftPath);
-        }
+        // Fixed default slug
+        $slug = isset($data['slug']) ? Str::slug($data['slug']) : $model->slug;
 
-        if ($content !== null) {
-            $this->updateFile($newDraftPath, $content);
-        }
+        // Extract default file name
+        $fname = str_replace('.blade.php', '', basename($model->path));
+        // File name
+        $fileName = $data['lang'] == 'en' ? $fname : $fname . "_" . $data['lang'];
 
-        if (!$isDraft) {
-            if (!File::exists($newDraftPath)) {
-                throw new ReportError(__("Draft page cannot be found"), 404);
+        // path destinations
+        $draftPath = $this->draftPathGenerate($fileName);
+
+        // Create current draft path if it does not exist
+        if (!file_exists($draftPath)) {
+            // Schema verification exists
+            if (file_exists($this->schema)) {
+                // Create new file
+                copy($this->schema, $draftPath);
             }
-
-            File::copy($newDraftPath, $publishedPath);
         }
 
-        $this->pageRepository->update($model, [
-            'name' => $data['name'] ?? $model->name,
-            'slug' => $newSlug,
-            'path' => $publishedPath,
+        // Seave content
+        $this->updateFile($draftPath, $data['content']);
+
+        // Is published? 
+        $isDraft = isset($data['is_draft']) ? $data['is_draft'] : true;
+
+        // save content
+        $model = $this->pageRepository->update($model, [
+            'name' => $data['name'],
+            'slug' => $slug,
             'is_published' => $data['is_published'] ?? false,
             'is_draft' => $isDraft,
             'index' => $data['index'] ?? false
         ]);
+
+        // Copy draft files to published directory
+        if (!$isDraft) {
+            if (!file_exists($draftPath)) {
+                throw new ReportError(__("Draft page cannot be found"), 404);
+            }
+
+            foreach ($model->toArray() as $key => $path) {
+                if (str_starts_with($key, "path")) {
+                    // Fixed draft path
+                    $draftPath = str_replace('published', 'draft', $path);
+                    copy($draftPath, $path);
+                }
+            }
+        }
+
+        // Sync translations
+        syncTranslations($model, $data);
 
         return $model;
     }
@@ -279,14 +393,26 @@ final class PageService
             throw new ReportError(__("Page not found"), 400);
         }
 
-        if (!empty($model->path) && File::exists($model->path)) {
-            File::delete($model->path);
+        // Remove files
+        foreach ($model->toArray() as $key => $value) {
+            if (str_starts_with($key, 'path')) {
+
+                // Remove published path
+                if (file_exists($value)) {
+                    unlink($value);
+                }
+
+                // create path for draft pages
+                $draftPath = str_replace('published', 'draft', $value);
+                // Remove draft path
+                if (file_exists($draftPath)) {
+                    unlink($draftPath);
+                }
+            }
         }
 
-        if (!empty($draftPath = $this->draftPathGenerate($model->slug)) && File::exists($draftPath)) {
-            File::delete($draftPath);
-        }
-
+        // remove translations
+        $model->translations()->delete();
 
         $model->delete();
 
@@ -314,7 +440,7 @@ final class PageService
             throw new ReportError(__("We can't find the production file to reset"), 404);
         }
 
-        File::copy($prod_path, $draft);
+        copy($prod_path, $draft);
     }
 
     /**
@@ -369,7 +495,7 @@ final class PageService
             $url = ltrim(config('app.url'), '/') . "/sitemaps/$filename";
 
             // Remove file and url
-            if (File::exists($path)) {
+            if (file_exists($path)) {
                 $this->SitemapService->remove($url);
                 File::delete($path);
             }
@@ -406,7 +532,6 @@ final class PageService
     public function copyFiles()
     {
         $scanDir = scandir($this->repository);
-
 
         foreach ($scanDir as $key => $file) {
             if (in_array($file, ['.', '..'])) {

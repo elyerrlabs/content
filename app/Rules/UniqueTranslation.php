@@ -1,0 +1,109 @@
+<?php
+
+namespace Content\App\Rules;
+
+use Closure;
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Translation\PotentiallyTranslatedString;
+use App\Contracts\Translatable;
+use App\Models\Translation;
+
+class UniqueTranslation extends \App\Rules\UniqueTranslation implements ValidationRule
+{
+
+    /**
+     * Translatable model
+     * @var Translatable
+     */
+    protected $translatable;
+
+    /**
+     * Resource id
+     * @var string
+     */
+    protected $id;
+
+    /**
+     * Construct
+     * @param App\Contracts\Translatable $translatable
+     */
+    public function __construct(Translatable $translatable, string $id = '')
+    {
+        $this->translatable = $translatable;
+        $this->id = $id;
+    }
+
+    /**
+     * Run the validation rule.
+     *
+     * @param  Closure(string, ?string=): PotentiallyTranslatedString  $fail
+     */
+    public function validate(string $attribute, mixed $value, Closure $fail): void
+    {
+        $fieldsReppited = [];
+        $fieldsEmpty = [];
+
+        // Extract translatable fields
+        $inputs = extractTranslationsFields($this->translatable, request()->toArray());
+
+        // Verification incomming fields empty
+        foreach ($inputs as $field => $value) {
+
+            [$key, $locale] = explode('_', $field);
+
+            if (empty($value) && $key != 'slug') {
+                $fieldsEmpty[] = $field;
+            }
+        }
+
+        if (!empty($fieldsEmpty)) {
+            $fail(
+                __('translations.errors.fields_are_empty', [
+                    'fields' => implode(', ', $fieldsEmpty),
+                ])
+            );
+        }
+
+        // Verification fields in use
+        foreach ($inputs as $field => $value) {
+
+            [$key, $locale] = explode('_', $field);
+
+            $attr = Translation::query()
+                ->where(
+                    'translatable_type',
+                    $this->translatable->getMorphClassIdentifier()
+                )
+                ->where('locale', $locale)
+                ->whereRaw(
+                    "LOWER(attribute) = ?",
+                    [strtolower($key)]
+                )->whereRaw(
+                    "LOWER(value) = ?",
+                    [mb_strtolower($value)]
+                )->first();
+
+            // except verification for the same id and instance 
+            if (
+                !empty($attr) &&
+                !empty($this->id) &&
+                $attr->translatable instanceof $this->translatable &&
+                $attr->translatable->id == $this->id
+            ) {
+                continue;
+            }
+
+            if (!empty($attr)) {
+                $fieldsReppited[] = $field;
+            }
+        }
+
+        if (!empty($fieldsReppited)) {
+            $fail(
+                __('translations.errors.fields_in_use', [
+                    'fields' => implode(', ', $fieldsReppited),
+                ])
+            );
+        }
+    }
+}
