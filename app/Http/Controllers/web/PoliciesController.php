@@ -9,7 +9,7 @@ final class PoliciesController extends Controller
     public function termsAndCondition()
     {
         return view(
-            'Content::layouts.policies',
+            'Content::policies',
             [
                 'title' => __('Terms and Conditions'),
                 'path' => 'pages.layouts.terms-and-conditions'
@@ -20,7 +20,7 @@ final class PoliciesController extends Controller
     public function policiesOfPrivacy()
     {
         return view(
-            'Content::layouts.policies',
+            'Content::policies',
             [
                 'title' => __('Privacy policy'),
                 'path' => 'pages.layouts.policies-of-privacy'
@@ -31,7 +31,7 @@ final class PoliciesController extends Controller
     public function policiesOfCookies()
     {
         return view(
-            'Content::layouts.policies',
+            'Content::policies',
             [
                 'title' => __('Cookies Policy'),
                 'path' => 'pages.layouts.policies-of-cookies'
