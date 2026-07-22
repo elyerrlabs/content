@@ -539,6 +539,11 @@ final class PageService
                 // Generate routes 
                 foreach ($pages as $page) {
 
+                    // Omit for not indexable pages and not publshed
+                    if (!$page->index || !$page->is_published) {
+                        continue;
+                    }
+
                     // suport for langs
                     $alternates = [];
 
