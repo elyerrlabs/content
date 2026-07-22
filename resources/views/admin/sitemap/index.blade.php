@@ -37,13 +37,13 @@
                 <x-content-editor label="{{ __('Edit custom sitemap') }}" content="{{ $content }}"
                     preview="{{ false }}" jodit="{{ false }}" name="content" lang="html" />
 
-                <div class="block p-4 m-4">
-                    <button type="submit" class="bg-blue-700 text-white dark:text-gray-800 px-4 p-2">
+                <div class="flex justify-end p-4 m-4">
+                    <button type="submit"
+                        class="bg-blue-800 text-white dark:text-gray-800 hover:bg-blue-900 px-4 py-3 cursor-pointer">
                         {{ __('Submit') }}
                     </button>
                 </div>
             </form>
         </div>
-
     </v-slot:main>
 </x-admin-layout>
