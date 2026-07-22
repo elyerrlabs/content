@@ -2,7 +2,6 @@
 
 namespace Content\App\Services;
 
-use App\Contracts\Translatable;
 use Elyerr\ApiResponse\Exceptions\ReportError;
 use Content\App\Models\Page;
 use Content\App\Services\SitemapService;
@@ -38,7 +37,7 @@ final class PageService
      * Construct
      * @param PageRepository $pageRepository
      */
-    public function __construct(protected PageRepository $pageRepository, protected SitemapService $SitemapService)
+    public function __construct(protected PageRepository $pageRepository, protected SitemapService $sitemapService)
     {
         $this->repository = __DIR__ . "/../../resources/views/schemas";
         $this->schema = base_path('resources/views/pages/layouts/schema.blade.php');
@@ -179,7 +178,11 @@ final class PageService
         // Redirect current lang
         if ($currentLang != $lang) {
             $page = $page->localize();
-            return redirect()->route('pages', ['locale' => $currentLang, 'slug' => $page->slug]);
+            return redirect()->route('pages', [
+                'locale' =>
+                    $currentLang,
+                'slug' => $page->slug
+            ]);
         }
 
         return view()->file($path);
@@ -348,7 +351,6 @@ final class PageService
         $modelData = $model->toArray();
         foreach ($paths as $key => $path) {
             if (!isset($modelData[$key])) {
-                dd(33);
                 $data[$key] = $path;
             }
         }
@@ -498,6 +500,11 @@ final class PageService
         return file_get_contents($this->loadLayoutPath($name));
     }
 
+    /**
+     * Load schema.blade.php path 
+     * @param string $name
+     * @return string
+     */
     public function loadLayoutPath(string $name)
     {
 
@@ -518,32 +525,58 @@ final class PageService
      */
     public function indexPages()
     {
-        $this->pageRepository->query()->where('index', true)->chunk(1000, function ($chunk, $index) {
+        // remove file before creation 
+        $this->sitemapService->deleteByPrefix("pages_");
 
-            $filename = "posts_{$index}.xml";
-            // public path
-            $path = public_path("sitemaps/{$filename}");
-            // sitemap url
-            $url = ltrim(config('app.url'), '/') . "/sitemaps/$filename";
+        $this->pageRepository->query()->where('index', true)
+            ->chunk(500, function ($pages, $index) {
 
-            // Remove file and url
-            if (file_exists($path)) {
-                $this->SitemapService->remove($url);
-                File::delete($path);
-            }
+                // Default locale
+                $locales = ['en'];
+                // sitemap file name
+                $sitemapName = "pages_{$index}";
 
-            foreach ($chunk as $page) {
-                $this->SitemapService->register(
-                    "posts_{$index}",
-                    route('pages', $page->slug),
-                    null,
-                    'weekly',
-                    0.5
-                );
-            }
-        });
+                // Generate routes 
+                foreach ($pages as $page) {
+
+                    // suport for langs
+                    $alternates = [];
+
+                    $alternates['en'] = [
+                        'url' => route('pages', ['slug' => $page->slug]),
+                    ];
+
+                    $locales = array_merge($locales, $page->translations->pluck('locale')->unique()->values()->toArray());
+
+                    // Foreach locale add url | support for multi lang
+                    foreach ($locales as $key => $lang) {
+
+                        // Omit lang 'en' 
+                        if ($lang == 'en') {
+                            continue;
+                        }
+
+                        // Add langs
+                        $alternates[$lang] = [
+                            'url' => route('pages', [
+                                'locale' => $lang,
+                                'slug' => $page->{"slug_" . $lang}
+                            ])
+                        ];
+                    }
+
+                    // register langs
+                    $this->sitemapService->register($sitemapName, $alternates);
+                }
+            });
     }
 
+    /**
+     * Render error for page builder
+     * @param mixed $e
+     * @param mixed $page
+     * @return \Illuminate\Http\Response
+     */
     public function renderDraftError($e, $page)
     {
         return response()->view('Content::errors.builder', [

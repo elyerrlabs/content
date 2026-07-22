@@ -13,7 +13,7 @@ final class SitemapController extends WebController
     /**
      * Construct
      */
-    public function __construct(protected SitemapService $SitemapService)
+    public function __construct(protected SitemapService $sitemapService)
     {
         parent::__construct();
         $this->middleware("userCanAny:developer:content-seo:full,developer:content-seo:view")->only('index', 'metaForm', 'robotForm');
@@ -29,9 +29,9 @@ final class SitemapController extends WebController
      */
     public function index()
     {
-        $data = $this->SitemapService->listRoutes()->toArray();
+        $content = $this->sitemapService->getOrUpdateCustomSitemap();
 
-        return view('Content::admin.sitemap.index', compact('data'), [
+        return view('Content::admin.sitemap.index', compact('content'), [
             'routes' => resolveInertiaRoutes(config('menus.pages'))
         ]);
     }
@@ -43,62 +43,13 @@ final class SitemapController extends WebController
      */
     public function updateMeta(Request $request)
     {
-        $request->validate([
-            'url' => [
-                'required',
-                function ($attribute, $value, $fail) {
-                    if (!filter_var($value, FILTER_VALIDATE_URL)) {
-                        return $fail("The $attribute must be a valid URL.");
-                    }
 
-                    $scheme = parse_url($value, PHP_URL_SCHEME);
-
-                    if (!in_array($scheme, ['http', 'https', 'ftp'])) {
-                        return $fail(__("Only http, https or ftp protocols are allowed."));
-                    }
-                }
-            ],
-            'image' => [
-                'nullable',
-                function ($attribute, $value, $fail) {
-                    if ($value && !filter_var($value, FILTER_VALIDATE_URL)) {
-                        return $fail("The $attribute must be a valid URL.");
-                    }
-                }
-            ],
-            'changefreq' => [
-                'nullable',
-                Rule::in(['always', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'never'])
-            ],
-            'priority' => [
-                'nullable',
-                'numeric',
-                'between:0.1,1.0'
-            ],
-        ]);
-
-        $this->SitemapService->register(
-            'pages',
-            $request->url,
-            $request->image,
-            $request->changefreq ?? 'weekly',
-            $request->priority ?? 0.5
-        );
+        $this->sitemapService->getOrUpdateCustomSitemap($request->input('content'), true);
 
         return redirect()->back()->with("status", __('Sitemap updated succesfully'));
     }
 
-    /**
-     * Destroy
-     * @param string $url
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function delete(string $url)
-    {
-        $this->SitemapService->remove($url);
 
-        return redirect()->back()->with("status", __('Page deleted succesfully'));
-    }
 
     /**
      * Reset sitemap
@@ -106,9 +57,8 @@ final class SitemapController extends WebController
      */
     public function reset()
     {
-        $this->SitemapService->reset();
+        $this->sitemapService->reset();
         return redirect()->back()->with("status", __('Sitemap reset successfully'));
-        ;
     }
 
     /**
@@ -117,7 +67,11 @@ final class SitemapController extends WebController
      */
     public function robotForm()
     {
-        $content = $this->SitemapService->getRobotData();
+        $content = $this->sitemapService->getOrUpdateContent(
+            'robots.txt',
+            "User-agent: *\nDisallow: /"
+        );
+
         return view('Content::admin.sitemap.robot', compact('content'), [
             'routes' => resolveInertiaRoutes(config('menus.pages'))
         ]);
@@ -134,45 +88,13 @@ final class SitemapController extends WebController
             'content' => 'required',
         ]);
 
-        $this->SitemapService->updateRobotData($request);
+        $this->sitemapService->getOrUpdateContent(
+            'robots.txt',
+            $request->input('content'),
+            true
+        );
 
         return redirect()->back()->with('status', __('Content updated successfully'));
     }
 
-    /**
-     * show form favicon
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
-     */
-    public function faviconForm()
-    {
-        $images = $this->SitemapService->getImagesData();
-
-        return view('Content::admin.sitemap.favicon', compact('images'), [
-            'routes' => resolveInertiaRoutes(config('menus.pages'))
-        ]);
-    }
-
-    /**
-     * Update favicon
-     * @param Request $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function updateFavicon(Request $request)
-    {
-        $request->validate([
-            'images' => 'nullable|array|max:20',
-            'images.*' => 'file|mimes:jpg,jpeg,png,gif,webp,ico,svg,bmp,avif|max:5120',
-        ]);
-
-        $this->SitemapService->updateFavicon($request);
-
-        return redirect()->back()->with('status', __('Public images and favicon updated successfully'));
-    }
-
-    public function deleteFavicon(string $path)
-    {
-        $this->SitemapService->deleteFile($path);
-
-        return redirect()->back()->with('status', __('File deleted successfully'));
-    }
 }

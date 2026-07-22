@@ -2,522 +2,378 @@
 
 namespace Content\App\Services;
 
-
-
 use Elyerr\ApiResponse\Exceptions\ReportError;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Storage;
-use Content\Vendor\Spatie\Sitemap\Sitemap;
-use Content\Vendor\Spatie\Sitemap\SitemapIndex;
-use Content\Vendor\Spatie\Sitemap\Tags\Sitemap as SitemapTag;
+use RuntimeException;
+use Content\App\Support\SitemapIndex;
+use Content\App\Support\Sitemap;
+use Carbon\Carbon;
 use Content\Vendor\Spatie\Sitemap\Tags\Url;
 
 class SitemapService
 {
     /**
-     * Directory
-     * @var string
-     */
-    private $directory;
-
-    /**
-     * Directory
+     * Sitemap path
      * @var string
      */
     private $sitemapPath;
 
     /**
-     * Robot
+     * Sitemap name
      * @var string
      */
-    private $robot;
-
+    private $sitemapIndexPath;
 
     /**
-     * Uri
+     * Custom pages
      * @var string
      */
-    private $uri;
-
-    /**
-     * Meta
-     * @var string
-     */
-    private $metafile;
-
-    /**
-     * Storage
-     * @var string
-     */
-    private $storage;
-
-
-    private $sitemapIndexName;
+    private $customSitemap;
 
     /**
      * Construct
-     * @param bool $disableBackup
+     * 
      */
-    public function __construct(bool $disableBackup = true)
+    public function __construct()
     {
-        $this->directory = public_path('sitemaps');
+        $this->sitemapPath = public_path('sitemaps');
+        $this->sitemapIndexPath = $this->sitemapPath . "/index.xml";
+        $this->customSitemap = "custom.xml";
+    }
 
-        $this->sitemapIndexName = "index.xml";
-        $this->sitemapPath = "{$this->directory}/{$this->sitemapIndexName}";
+    /**
+     * Get the sitemap file name
+     * @param string $fileName
+     * @return string
+     */
+    public function getSitemapPath(string $fileName)
+    {
+        return $this->sitemapPath . "/$fileName.xml";
+    }
 
-        $this->uri = config('app.url') . $this->sitemapPath;
-
-        $this->robot = public_path('robots.txt');
-        $this->metafile = base_path('resources/views/layouts/editable/meta.blade.php');
-        $this->storage = "public";
-
-        // Create sitemap directory
-        if (!is_dir($this->directory)) {
-            mkdir($this->directory, 0644, true);
+    /**
+     * Register sitemaps
+     * @param string $fileName
+     * @param array $alternates
+     * @throws RuntimeException
+     * @return void
+     */
+    public function register(string $fileName, array $alternates): void
+    {
+        /*
+         * Create sitemap directory if it does not exist
+         */
+        if (!is_dir($this->sitemapPath)) {
+            mkdir($this->sitemapPath, 0755, true);
         }
 
-        if ($disableBackup) {
-            $this->backupFiles();
+        /*
+         * Validate sitemap data
+         */
+        if (empty($alternates['en']['url'])) {
+            throw new RuntimeException(__('The english route is required.'));
         }
-    }
 
-    /**
-     * Get full path of a sitemap file
-     */
-    public function getSitemap(string $filename): string
-    {
-        return $this->directory . '/' . $filename . '.xml';
-    }
+        $sitemapFile = $this->getSitemapPath($fileName);
 
-    /**
-     * List routes and mark registered ones
-     */
-    public function listRoutes()
-    {
-        $registeredUrls = $this->getAllRegisteredUrls();
+        $this->manageSitemaIndex($fileName);
 
-        return collect(Route::getRoutes())
-            ->filter(fn($route) => in_array('GET', $route->methods()))
-            ->map(function ($route) use ($registeredUrls) {
-
-                $base = rtrim(config('app.url'), '/');
-                $uri = ltrim($route->uri(), '/');
-                $url = $base . '/' . $uri;
-
-                return [
-                    'url' => $url,
-                    'name' => $route->getName(),
-                    'image' => null,
-                    'registered' => in_array($url, $registeredUrls),
-                    'links' => [
-                        'delete' =>
-                            in_array($url, $registeredUrls)
-                            ? route('admin.sitemaps.delete', ['url' => base64_encode($url)])
-                            : null,
-                    ],
-                ];
-            })
-            ->values();
-    }
-
-    /**
-     * Register entry into a specific sitemap file
-     */
-    public function register(string $file, string $url, ?string $image = null, ?string $changefreq = 'weekly', ?float $priority = 0.5): bool
-    {
-
-        $path = $this->getSitemap($file);
-
-        // Load empty sitemap
+        /*
+         * Create sitemap instance
+         */
         $sitemap = Sitemap::create();
 
-        // Read exists routes
-        if (file_exists($path)) {
-            $xml = simplexml_load_file($path);
+        /*
+         * Load existing sitemap URLs
+         *
+         * NOTE:
+         * Existing XML entries are loaded without SEO metadata.
+         * For a full regeneration process, it is recommended
+         * to rebuild the sitemap from the source data.
+         */
+        if (file_exists($sitemapFile)) {
 
-            foreach ($xml->url as $node) {
-                $loc = (string) $node->loc;
+            $xml = simplexml_load_file($sitemapFile);
 
-                $entry = Url::create($loc);
+            $namespaces = $xml->getNamespaces(true);
 
-                // lastmod
-                if (isset($node->lastmod)) {
-                    $entry->setLastModificationDate(Carbon::parse((string) $node->lastmod));
+            $urlset = $xml->children($namespaces['']);
+
+            foreach ($urlset->url as $item) {
+
+                $url = Url::create((string) $item->loc)
+                    ->setLastModificationDate(
+                        Carbon::parse((string) $item->lastmod)
+                    );
+
+                /*
+                 * Load hreflang alternates
+                 */
+                $xhtml = $item->children($namespaces['xhtml']);
+
+                foreach ($xhtml->link as $link) {
+                    $attributes = $link->attributes();
+
+                    $url->addAlternate(
+                        (string) $attributes->href,
+                        (string) $attributes->hreflang
+                    );
                 }
 
-                // changefreq
-                if (isset($node->changefreq)) {
-                    $entry->setChangeFrequency((string) $node->changefreq);
-                }
-
-                // priority
-                if (isset($node->priority)) {
-                    $entry->setPriority((float) $node->priority);
-                }
-
-                // images
-                if (isset($node->{'image:image'})) {
-                    foreach ($node->{'image:image'} as $imgNode) {
-                        $img = (string) $imgNode->{'image:loc'};
-                        $entry->addImage($img);
-                    }
-                }
-
-                // Add reconstructed sitemap
-                $sitemap->add($entry);
+                $sitemap->add($url);
             }
         }
 
-        // Verify duplicated data
-        foreach ($sitemap->getTags() as $tag) {
-            if ($tag instanceof Url && $tag->url === $url) {
-                return false;
-            }
-        }
 
-        // Create new metadata
-        $new = Url::create($url)
-            ->setLastModificationDate(now())
-            ->setChangeFrequency($changefreq)
-            ->setPriority($priority);
+        /*
+         * Create canonical URL using the default language (en)
+         *
+         * The English version is the base URL and does not
+         * include the language prefix.
+         */
+        $url = Url::create($alternates['en']['url'])->setLastModificationDate(now());
 
-        if ($image) {
-            $new->addImage($image);
-        }
+        /*
+         * Add alternate language URLs using hreflang
+         *
+         * Each translated version points to the same content
+         * in a different language.
+         */
+        foreach ($alternates as $locale => $attributes) {
 
-        // Add new entry
-        $sitemap->add($new);
-
-        // Save individual site map
-        $sitemap->writeToFile($path);
-
-        // Update index
-        $this->updateIndex();
-
-        return true;
-    }
-
-    /**
-     * Create/update sitemap index
-     */
-    public function updateIndex(): void
-    {
-        $index = SitemapIndex::create();
-
-        foreach (glob($this->directory . '/*.xml') as $file) {
-            $fileName = basename($file);
-            if ($fileName == $this->sitemapIndexName) {
+            if (empty($attributes['url'])) {
                 continue;
             }
-            $index->add(
-                SitemapTag::create(url('sitemaps/' . $fileName))
-                    ->setLastModificationDate(now())
+
+            $url->addAlternate($attributes['url'], $locale);
+        }
+
+
+        /*
+         * Add images associated with the canonical URL
+         *
+         * This allows future support for localized images,
+         * captions, titles and other SEO image metadata.
+         */
+        foreach ($alternates['en']['images'] ?? [] as $image) {
+
+            $url->addImage(
+                $image['url'],
+                $image['caption'] ?? null,
+                $image['title'] ?? null
             );
         }
 
-        $index->writeToFile($this->sitemapPath);
+
+        /*
+         * Add generated URL to sitemap
+         */
+        $sitemap->add($url);
+
+
+        /*
+         * Write sitemap XML file
+         */
+        $sitemap->writeToFile($sitemapFile);
     }
 
     /**
-     * Get URLs of a specific sitemap file
+     * Manage sitemap index
+     * @param string $sitemapChild
+     * @return void
      */
-    public function getUrls(string $file): array
+    public function manageSitemaIndex(string $sitemapChild)
     {
-        $path = $this->getSitemap($file);
+        $index = SitemapIndex::create();
 
-        if (!file_exists($path)) {
-            return [];
-        }
+        $file = "/sitemaps/{$sitemapChild}.xml";
 
-        $xml = simplexml_load_file($path);
-        $list = [];
+        if (file_exists($this->sitemapIndexPath)) {
 
-        foreach ($xml->url as $node) {
-            $list[] = (string) $node->loc;
-        }
+            $xml = simplexml_load_file($this->sitemapIndexPath);
 
-        return $list;
-    }
+            $namespaces = $xml->getNamespaces(true);
 
-    /**
-     * Get ALL URLs from ALL sitemap files
-     */
-    public function getAllRegisteredUrls(): array
-    {
-        $all = [];
+            $root = $xml->children($namespaces['']);
 
-        foreach (glob($this->directory . '/*.xml') as $file) {
-            $xml = simplexml_load_file($file);
+            $exists = false;
 
-            foreach ($xml->url as $node) {
-                $all[] = (string) $node->loc;
-            }
-        }
+            foreach ($root->sitemap as $item) {
 
-        return $all;
-    }
+                $loc = (string) $item->loc;
 
-    /**
-     * Remove a specific URL from all sitemaps
-     */
-    public function remove(string $encodedUrl): bool
-    {
-        $url = base64_decode($encodedUrl);
+                // omit unexisting files
+                if (!file_exists(public_path(str_replace(url(''), '', url($loc))))) {
+                    continue;
+                }
 
-        foreach (glob($this->directory . '/*.xml') as $file) {
-            $xml = simplexml_load_file($file);
-            $new = Sitemap::create();
-            $modified = false;
+                /*
+                 * Preserve existing sitemap
+                 */
+                $index->add($loc);
 
-            foreach ($xml->url as $node) {
-                $loc = (string) $node->loc;
-
-                if ($loc !== $url) {
-                    $new->add(Url::create($loc));
-                } else {
-                    $modified = true;
+                /*
+                 * Avoid duplicate registrations
+                 */
+                if ($loc === url($file)) {
+                    $exists = true;
                 }
             }
 
-            if ($modified) {
-                $new->writeToFile($file);
+            /*
+             * Register new sitemap if it does not exist
+             */
+            if (!$exists) {
+                $index->add($file);
             }
+
+        } else {
+
+            /*
+             * Create the first sitemap entry
+             */
+            $index->add($file);
         }
 
-        // Rebuild index
-        $this->updateIndex();
-
-        return true;
+        /*
+         * Save sitemap index
+         */
+        $index->writeToFile($this->sitemapIndexPath);
     }
 
     /**
-     * Reset sitemaps
-     * @return bool
+     * Delete sitemaps by prefix
+     * @param string $prefix
+     * @return void
+     */
+    public function deleteByPrefix(string $prefix)
+    {
+        $files = array_diff(scandir($this->sitemapPath), ['.', '..']);
+
+        foreach ($files as $key => $value) {
+            if (str_starts_with($value, $prefix)) { // filter by prefix
+                $path = $this->sitemapPath . "/$value";
+                if (file_exists($path)) { // check verification path
+                    @unlink($path);
+                }
+            }
+        }
+
+        $this->refreshSitemapIndex();
+    }
+
+    /**
+     * Refresh sitemapIndex
+     * @return void
+     */
+    public function refreshSitemapIndex()
+    {
+        $index = SitemapIndex::create();
+
+        if (file_exists($this->sitemapIndexPath)) {
+
+            $xml = simplexml_load_file($this->sitemapIndexPath);
+
+            $namespaces = $xml->getNamespaces(true);
+
+            $root = $xml->children($namespaces['']);
+
+            foreach ($root->sitemap as $item) {
+
+                $loc = (string) $item->loc;
+
+                // omit unexisting files
+                if (!file_exists(public_path(str_replace(url(''), '', url($loc))))) {
+                    continue;
+                }
+
+                /*
+                 * Preserve existing sitemap
+                 */
+                $index->add($loc);
+            }
+        }
+
+        /*
+         * Save sitemap index
+         */
+        $index->writeToFile($this->sitemapIndexPath);
+    }
+
+    /**
+     * Reset robots and sitemaps
+     * @return void
      */
     public function reset()
     {
         // Delete all sitemap files inside the directory
-        if (is_dir($this->directory)) {
-            $files = glob($this->directory . '/*.xml');
+        $files = array_diff(scandir($this->sitemapPath), ['.', '..', $this->customSitemap]);
 
+        if (is_dir($this->sitemapPath)) {
             foreach ($files as $file) {
-                if (is_file($file)) {
-                    unlink($file);
-                }
+                @unlink(public_path("sitemaps/" . $file));
             }
         }
 
         // Reset robots.txt to block indexing
-        unlink($this->robot);
-        $robotsContent = "User-agent: *\nDisallow: /";
-        file_put_contents($this->robot, $robotsContent);
+        @unlink(public_path('robots.txt'));
 
-        return true;
-    }
-
-
-    public function backupFiles()
-    {
-        $public = public_path();
-
-        Storage::disk('backups')->makeDirectory($this->storage);
-
-        // files statics
-        $files = ['robots.txt'];
-
-        // Extenssion 
-        $extensions = [
-            'png',
-            'jpg',
-            'jpeg',
-            'gif',
-            'webp',
-            'svg',
-            'ico',
-            'bmp',
-            'avif',
-        ];
-
-        $publicFiles = scandir($public);
-
-        foreach ($publicFiles as $file) {
-
-            $path = "{$public}/{$file}";
-
-            // Ignorar directorios
-            if (!is_file($path)) {
-                continue;
-            }
-
-            // Verificar extensión
-            $extension = strtolower(
-                pathinfo($file, PATHINFO_EXTENSION)
-            );
-
-            if (in_array($extension, $extensions)) {
-                $files[] = $file;
-            }
-        }
-
-        foreach ($files as $file) {
-
-            $from = "{$public}/{$file}";
-            $to = "{$this->storage}/{$file}";
-
-            if (file_exists($from)) {
-
-                Storage::disk('backups')->put(
-                    $to,
-                    file_get_contents($from)
-                );
-            }
-        }
+        $this->getOrUpdateContent(
+            "robots.txt",
+            "User-agent: *\nDisallow: /",
+            true
+        );
     }
 
     /**
-     * Restore backup
-     * @return void
-     */
-    public function restorePublicFromBackup()
-    {
-        $public = public_path();
-
-        // Stop if directory does not exists
-        if (!Storage::disk('backups')->exists($this->storage)) {
-            return;
-        }
-
-        // Get ALL files from backup directory
-        $allFiles = Storage::disk('backups')->allFiles($this->storage);
-
-        foreach ($allFiles as $backupFile) {
-            // Convert backup path to public path
-            $relativePath = str_replace($this->storage . '/', '', $backupFile);
-            $publicPath = "{$public}/{$relativePath}";
-
-            // Copy file from backup to public (overwrites existing files)
-            $content = Storage::disk('backups')->get($backupFile);
-            file_put_contents($publicPath, $content);
-
-            // Set permissions to 644
-            chmod($publicPath, 0644);
-        }
-    }
-
-    /**
-     * Get metadata
+     * Get or update public file content
+     * @param string $relativePath
+     * @param string $defaultContent
+     * @param bool $update
      * @return bool|string
      */
-    public function getMetaData()
+    public function getOrUpdateContent(string $relativePath, string $defaultContent = '', bool $update = false)
     {
-        $data = file_get_contents($this->metafile);
+        $path = public_path($relativePath);
 
-        return $data;
+        if (!file_exists($path) || $update) {
+            file_put_contents($relativePath, $defaultContent);
+        }
+
+        return file_get_contents($path);
     }
 
     /**
-     * Get robot data
+     * Ger or update custom sitemap content
+     * @param string $defaultContent
+     * @param bool $update
      * @return bool|string
      */
-    public function getRobotData()
+    public function getOrUpdateCustomSitemap(string $defaultContent = '', bool $update = false)
     {
-        if (!file_exists($this->robot)) {
-            file_put_contents($this->robot, "User-agent: *\nDisallow: /");
+        // Set real sitemap path 
+        $relativePath = "sitemaps/" . $this->customSitemap;
+
+        $content = $defaultContent;
+
+        if (!file_exists(public_path($relativePath))) {
+
+            $content = <<<XML
+            <?xml version="1.0" encoding="UTF-8"?>
+            <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+            xmlns:xhtml="http://www.w3.org/1999/xhtml"
+            xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+            xmlns:video="http://www.google.com/schemas/sitemap-video/1.1"
+            xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+            <!--Add custom pages-->       
+            </urlset>
+            XML;
         }
 
-        return file_get_contents($this->robot);
-    }
 
-    /**
-     * Update meta data tags
-     * @param Request $request
-     * @throws ReportError
-     * @return bool
-     */
-    public function updateRobotData(Request $request): bool
-    {
-        try {
-            file_put_contents($this->robot, $request->input('content'));
+        // Add custom sitemap page to the index map
+        $this->manageSitemaIndex(str_replace('.xml', '', $this->customSitemap));
 
-            return true;
-        } catch (\Exception $e) {
-            throw new ReportError($e->getMessage(), $e->getCode());
-        }
-    }
-
-    public function getImagesData()
-    {
-        $publicPath = public_path();
-        $images = [];
-
-        // Extensiones de imagen comunes
-        $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'ico', 'svg', 'bmp', 'avif'];
-
-        // Escanear la raíz de public
-        $files = scandir($publicPath);
-
-        foreach ($files as $file) {
-            // Obtener la extensión del archivo
-            $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-
-            // Verificar si es una imagen y no es un directorio
-            if (in_array($extension, $imageExtensions) && is_file($publicPath . '/' . $file)) {
-
-                $images[] = [
-                    'path' => '/' . $file,
-                    'url' => url($file),
-                    'name' => $file
-                ];
-            }
-        }
-
-        return $images;
-    }
-
-    /**
-     * Change favicon data
-     * @param Request $request
-     * @return void
-     */
-    public function updateFavicon(Request $request)
-    {
-        foreach ($request->file('images') as $value) {
-            $value->move(public_path(), $value->getClientOriginalName());
-        }
-
-        $this->backupFiles();
-    }
-
-    /**
-     * Delete file
-     * @param string $path
-     * @return void
-     */
-    public function deleteFile(string $path)
-    {
-        $decodePath = base64_decode($path);
-        $backupPath = $this->storage . $decodePath;
-        File::delete(public_path($decodePath));
-        Storage::disk('backups')->delete($backupPath);
-    }
-
-    /**
-     * Update meta data tags
-     * @param Request $request
-     * @throws ReportError
-     * @return bool
-     */
-    public function updateMetaData(Request $request): bool
-    {
-        try {
-            file_put_contents($this->metafile, $request->meta);
-
-            return true;
-        } catch (\Exception $e) {
-            throw new ReportError($e->getMessage(), $e->getCode());
-        }
+        return $this->getOrUpdateContent($relativePath, $content, $update);
     }
 }

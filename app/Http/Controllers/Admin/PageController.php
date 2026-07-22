@@ -31,7 +31,7 @@ final class PageController extends WebController
     {
         $pages = $this->pageService->search($request);
         $pages = $pages->orderBy('updated_at', 'desc')->paginate(15);
-
+        
         return view('Content::admin.pages.pages', compact('pages'), [
             'routes' => resolveInertiaRoutes(config('menus.pages'))
         ]);
