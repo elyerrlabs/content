@@ -9,6 +9,7 @@ use Content\App\Support\SitemapIndex;
 use Content\App\Support\Sitemap;
 use Carbon\Carbon;
 use Content\Vendor\Spatie\Sitemap\Tags\Url;
+use Illuminate\Support\Facades\Storage;
 
 class SitemapService
 {
@@ -317,6 +318,7 @@ class SitemapService
 
         // Reset robots.txt to block indexing
         @unlink(public_path('robots.txt'));
+        Storage::disk('content_backups')->delete('robots.txt');
 
         $this->getOrUpdateContent(
             "robots.txt",
@@ -332,12 +334,16 @@ class SitemapService
      * @param bool $update
      * @return bool|string
      */
-    public function getOrUpdateContent(string $relativePath, string $defaultContent = '', bool $update = false)
+    public function getOrUpdateContent(string $relativePath, string $defaultContent = '', bool $update = false, bool $saveBackup = false)
     {
         $path = public_path($relativePath);
 
         if (!file_exists($path) || $update) {
             file_put_contents($relativePath, $defaultContent);
+        }
+
+        if ($saveBackup) {
+            Storage::disk('content_backups')->put($relativePath, file_get_contents($path));
         }
 
         return file_get_contents($path);
@@ -375,5 +381,20 @@ class SitemapService
         $this->manageSitemaIndex(str_replace('.xml', '', $this->customSitemap));
 
         return $this->getOrUpdateContent($relativePath, $content, $update);
+    }
+
+
+    public function backupFiles()
+    {
+        $files = [];
+
+        $files['robots.txt'] = Storage::disk('content_backups')->path('robots.txt');
+
+        foreach ($files as $key => $value) {
+            if (file_exists($value)) {
+                copy($value, public_path($key));
+            }
+        }
+
     }
 }

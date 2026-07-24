@@ -91,6 +91,7 @@ final class SitemapController extends WebController
         $this->sitemapService->getOrUpdateContent(
             'robots.txt',
             $request->input('content'),
+            true,
             true
         );
 
