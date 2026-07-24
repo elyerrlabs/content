@@ -16,6 +16,5 @@ use Illuminate\Console\Scheduling\Schedule;
 return function (Schedule $schedule) {
 
     $schedule->command('content:module:restore:backup')->everyMinute()->withoutOverlapping();
-    $schedule->command('content:module:copy:files')->everySixHours()->withoutOverlapping();
 
 };
