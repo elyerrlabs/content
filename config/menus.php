@@ -167,17 +167,13 @@ return [
         */
         'user_settings' => [
 
-            /*
-            'content-settings' => [
-                'id'      => 'content-settings',
-                'name'    => 'Content Settings',
-                'route'   => 'module.content.web.settings',
-                'icon'    => 'mdi mdi-cog',
-
-                // Any Content settings permission.
-                'service' => 'settings:content',
-            ],
-            */
+            /*'content-settings' => [
+                'id' => 'content-settings',
+                'name' => 'Content Settings',
+                'route' => 'module.content.admin.settings.index',
+                'icon' => 'mdi mdi-cog',
+                'service' => 'settings:content:view',
+            ],*/
 
         ],
 
@@ -196,8 +192,6 @@ return [
                 'name' => 'Content Settings',
                 'route' => 'module.content.admin.settings.index',
                 'icon' => 'mdi mdi-cog',
-
-                // Strict permission (view only).
                 'service' => 'settings:content:view',
             ],
 
