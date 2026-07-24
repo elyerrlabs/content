@@ -88,7 +88,8 @@ class ModuleServiceProvider extends Provider
                     config()->set('auth', $merged);
                     break;
                 default:
-                    $this->mergeConfigFrom($file, $key);
+                    $merged = $this->mergeConfigSmart($currentConfig, $filePath);
+                    config()->set($key, $merged);
                     break;
             }
         }
