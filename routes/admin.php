@@ -1,11 +1,13 @@
 <?php
 
+use Content\App\Http\Controllers\Admin\FileController;
 use Illuminate\Support\Facades\Route;
 use Content\App\Http\Controllers\Admin\SitemapController;
 use Content\App\Http\Controllers\Admin\SeoController;
 use Content\App\Http\Controllers\Admin\PoliciesController;
 use Content\App\Http\Controllers\Admin\LayoutController;
 use Content\App\Http\Controllers\Admin\PageController;
+use Content\App\Http\Controllers\Admin\SettingsController;
 
 /**
  * Register admin routes
@@ -23,6 +25,7 @@ Route::middleware("throttle:third-party:content:admin")->group(function () {
     Route::get('policies', [PoliciesController::class, 'form'])->name('policies.schema');
     Route::get('seo', [SeoController::class, 'form'])->name('seo.schema');
 
+    Route::resource('files', FileController::class)->only('index', 'store', 'destroy');
 
     Route::group([
         'prefix' => 'sitemaps',
@@ -37,5 +40,14 @@ Route::middleware("throttle:third-party:content:admin")->group(function () {
         Route::get('/robot', [SitemapController::class, 'robotForm'])->name('robot.form');
         Route::post('/robot', [SitemapController::class, 'updateRobot'])->name('robot.update');
 
+    });
+
+
+    Route::group([
+        'prefix' => 'settings',
+        'as' => 'settings.'
+    ], function () {
+        Route::get('/', [SettingsController::class, 'index'])->name('index');
+        Route::get('/update', [SettingsController::class, 'update'])->name('update');
     });
 });

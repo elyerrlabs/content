@@ -381,6 +381,14 @@ return [
             'service' => 'developer:content-seo:view',
             "position" => 7
         ],
+         [
+            'id' => 'gallery',
+            'name' => 'Gallery',
+            'route' => 'module.content.admin.files.index',
+            'icon' => 'mdi mdi-upload-circle-outline',
+            'service' => 'developer:content-seo:view',
+            "position" => 8
+        ],
     ]
 
 
