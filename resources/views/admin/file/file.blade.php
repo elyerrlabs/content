@@ -104,39 +104,200 @@
                 text-overflow: ellipsis;
             }
 
-            .table-thumbnail {
-                width: 60px;
-                height: 60px;
-                object-fit: cover;
-                border-radius: 0.5rem;
+            .image-card {
+                display: flex;
+                flex-direction: column;
+                background: white;
+                border-radius: 1rem;
                 border: 1px solid #e2e8f0;
-            }
-
-            .dark .table-thumbnail {
-                border-color: #334155;
-            }
-
-            .image-row {
+                overflow: hidden;
                 transition: all 0.2s ease;
             }
 
-            .image-row:hover {
-                background-color: #f8fafc;
+            .image-card:hover {
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+                border-color: #94a3b8;
             }
 
-            .dark .image-row:hover {
-                background-color: #1e293b;
+            .dark .image-card {
+                background: #1e293b;
+                border-color: #334155;
             }
 
-            .copy-btn.copied {
-                background-color: #059669 !important;
+            .dark .image-card:hover {
+                border-color: #475569;
             }
 
-            .dark .copy-btn.copied {
-                background-color: #059669 !important;
+            .image-card .image-wrapper {
+                position: relative;
+                padding-bottom: 75%;
+                background: #f1f5f9;
+                overflow: hidden;
             }
 
-            /* Custom Confirm Dialog */
+            .dark .image-card .image-wrapper {
+                background: #0f172a;
+            }
+
+            .image-card .image-wrapper img {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                transition: transform 0.3s ease;
+            }
+
+            .image-card .image-wrapper:hover img {
+                transform: scale(1.05);
+            }
+
+            .image-card .image-info {
+                padding: 0.75rem;
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .image-card .image-info .original-name {
+                font-size: 0.75rem;
+                color: #64748b;
+                word-break: break-all;
+                line-height: 1.3;
+            }
+
+            .dark .image-card .image-info .original-name {
+                color: #94a3b8;
+            }
+
+            .image-card .image-info .disk-selector {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .image-card .image-info .disk-selector select {
+                width: 100%;
+                padding: 0.4rem 0.75rem;
+                border-radius: 0.5rem;
+                border: 1px solid #e2e8f0;
+                background: #f8fafc;
+                font-size: 0.75rem;
+                cursor: pointer;
+                transition: all 0.2s;
+                color: #0f172a;
+            }
+
+            .dark .image-card .image-info .disk-selector select {
+                background: #0f172a;
+                border-color: #334155;
+                color: #e2e8f0;
+            }
+
+            .image-card .image-info .disk-selector select:focus {
+                outline: none;
+                border-color: #0ea5e9;
+                ring: 2px solid #0ea5e9;
+            }
+
+            .image-card .image-info .disk-selector .save-disk-btn {
+                width: 100%;
+                padding: 0.4rem 0.75rem;
+                border-radius: 0.5rem;
+                background: #0ea5e9;
+                color: white;
+                font-size: 0.7rem;
+                font-weight: 600;
+                border: none;
+                cursor: pointer;
+                transition: all 0.2s;
+                min-height: 2rem;
+            }
+
+            .image-card .image-info .disk-selector .save-disk-btn:hover {
+                background: #0284c7;
+            }
+
+            .image-card .image-info .disk-selector .save-disk-btn.hidden {
+                display: none !important;
+            }
+
+            .image-card .image-info .url-section {
+                display: flex;
+                gap: 0.4rem;
+                align-items: center;
+            }
+
+            .image-card .image-info .url-section input {
+                flex: 1;
+                padding: 0.3rem 0.5rem;
+                border-radius: 0.5rem;
+                border: 1px solid #e2e8f0;
+                background: #f8fafc;
+                font-size: 0.7rem;
+                color: #475569;
+                min-width: 0;
+            }
+
+            .dark .image-card .image-info .url-section input {
+                background: #0f172a;
+                border-color: #334155;
+                color: #cbd5e1;
+            }
+
+            .image-card .image-info .url-section .copy-btn {
+                padding: 0.3rem 0.6rem;
+                border-radius: 0.5rem;
+                background: #0ea5e9;
+                color: white;
+                font-size: 0.65rem;
+                font-weight: 600;
+                border: none;
+                cursor: pointer;
+                white-space: nowrap;
+                transition: all 0.2s;
+                min-height: 1.8rem;
+            }
+
+            .image-card .image-info .url-section .copy-btn:hover {
+                background: #0284c7;
+            }
+
+            .image-card .image-info .url-section .copy-btn.copied {
+                background: #059669;
+            }
+
+            .image-card .image-info .actions {
+                display: flex;
+                flex-direction: column;
+                gap: 0.4rem;
+                margin-top: 0.25rem;
+            }
+
+            .image-card .image-info .actions .delete-btn {
+                width: 100%;
+                padding: 0.5rem;
+                border-radius: 0.5rem;
+                background: #ef4444;
+                color: white;
+                font-size: 0.75rem;
+                font-weight: 600;
+                border: none;
+                cursor: pointer;
+                transition: all 0.2s;
+                min-height: 2.2rem;
+            }
+
+            .image-card .image-info .actions .delete-btn:hover {
+                background: #dc2626;
+            }
+
+            .custom-select {
+                cursor: pointer;
+            }
+
+            /* Confirm Dialog */
             .confirm-overlay {
                 position: fixed;
                 inset: 0;
@@ -243,6 +404,7 @@
             .confirm-dialog .btn-cancel {
                 background: #f1f5f9;
                 color: #475569;
+                cursor: pointer;
             }
 
             .confirm-dialog .btn-cancel:hover {
@@ -261,11 +423,24 @@
             .confirm-dialog .btn-danger {
                 background: #dc2626;
                 color: white;
+                cursor: pointer;
             }
 
             .confirm-dialog .btn-danger:hover {
                 background: #b91c1c;
                 transform: scale(1.02);
+            }
+
+            .gallery-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 1rem;
+            }
+
+            @media (min-width: 768px) {
+                .gallery-grid {
+                    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                }
             }
         </style>
     @endpush
@@ -293,6 +468,21 @@
                             </div>
                         </div>
                     </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm text-slate-500 dark:text-slate-400">
+                            <span class="font-semibold text-slate-900 dark:text-white">{{ $files->total() }}</span>
+                            {{ __('images') }}
+                        </span>
+                        <form method="get" class="flex gap-2">
+                            <input type="search" name="name" value="{{ request('name') }}"
+                                placeholder="{{ __('Search...') }}"
+                                class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-sky-900/40" />
+                            <button type="submit"
+                                class="rounded-xl bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-600 cursor-pointer">
+                                {{ __('Search') }}
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
 
@@ -310,10 +500,21 @@
                         enctype="multipart/form-data" id="uploadForm">
                         @csrf
 
+                        <div class="mb-4">
+                            <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                                {{ __('Storage Disk') }}
+                            </label>
+                            <select name="disk"
+                                class="custom-select w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                                <option value="content_local">{{ __('Local') }}</option>
+                                <option value="content_s3">{{ __('AWS S3') }}</option>
+                            </select>
+                        </div>
+
                         <div class="drop-zone" id="dropZone">
                             <input type="file" name="files[]" id="fileInput" accept="image/*" multiple
                                 class="hidden" />
-                            <div id="dropZoneContent">
+                            <div>
                                 <svg class="mx-auto h-12 w-12 text-slate-400 dark:text-slate-500" fill="none"
                                     stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -329,71 +530,62 @@
                         <div id="nameInputs"></div>
 
                         <button type="submit" id="submitBtn"
-                            class="mt-4 w-full rounded-xl bg-slate-900 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600">
+                            class="mt-4 w-full rounded-xl bg-slate-900 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-slate-700 dark:hover:bg-slate-600 cursor-pointer">
                             {{ __('Upload Images') }}
                         </button>
                     </form>
                 </div>
 
-                <!-- Gallery List View -->
+                <!-- Gallery Grid View -->
                 <div>
                     @if ($files->count())
-                        <div
-                            class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
-                            <div class="overflow-x-auto">
-                                <table class="w-full">
-                                    <thead>
-                                        <tr class="border-b border-slate-200 dark:border-slate-700">
-                                            <th
-                                                class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                                                {{ __('Image') }}</th>
-                                            <th
-                                                class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                                                {{ __('Name') }}</th>
-                                            <th
-                                                class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                                                {{ __('URL') }}</th>
-                                            <th
-                                                class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                                                {{ __('Actions') }}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($files as $file)
-                                            <tr class="image-row border-b border-slate-100 dark:border-slate-700/50">
-                                                <td class="px-4 py-3">
-                                                    <img src="{{ $file->links['show'] }}" alt="{{ $file->name }}"
-                                                        class="table-thumbnail" loading="lazy" />
-                                                </td>
+                        <div class="gallery-grid">
+                            @foreach ($files as $file)
+                                <div class="image-card">
+                                    <div class="image-wrapper">
+                                        <img src="{{ $file->links['show'] }}" alt="{{ $file->name }}"
+                                            loading="lazy" />
+                                    </div>
+                                    <div class="image-info">
+                                        <div class="original-name">{{ $file->original_name }}</div>
 
-                                                <td class="px-4 py-3">
-                                                    <span
-                                                        class="text-sm text-slate-600 dark:text-slate-400">{{ $file->original_name }}</span>
-                                                </td>
-                                                <td class="px-4 py-3">
-                                                    <div class="flex items-center gap-2">
-                                                        <input type="text" readonly value="{{ $file->url }}"
-                                                            class="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-600 truncate dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300" />
-                                                        <button type="button"
-                                                            class="copy-btn rounded-lg bg-sky-600 px-2 py-1 text-xs font-medium text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-600"
-                                                            data-url="{{ $file->url }}">
-                                                            {{ __('Copy') }}
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                                <td class="px-4 py-3">
-                                                    <button type="button"
-                                                        class="delete-btn rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-rose-700 dark:bg-rose-500 dark:hover:bg-rose-600"
-                                                        data-action="{{ route('module.content.admin.files.destroy', $file->id) }}"
-                                                        data-name="{{ $file->name }}">
-                                                        {{ __('Delete') }}
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
+                                        <div class="disk-selector">
+                                            <form action="{{ route('module.content.admin.files.update', $file->id) }}"
+                                                method="post" class="disk-form" data-file-id="{{ $file->id }}"
+                                                data-current-disk="{{ $file->disk }}">
+                                                @csrf
+                                                @method('put')
+                                                <select name="disk" class="disk-select custom-select">
+                                                    <option value="content_local"
+                                                        {{ $file->disk === 'content_local' ? 'selected' : '' }}>
+                                                        {{ __('Local') }}
+                                                    </option>
+                                                    <option value="content_s3"
+                                                        {{ $file->disk === 'content_s3' ? 'selected' : '' }}>
+                                                        {{ __('S3') }}
+                                                    </option>
+                                                </select>
+                                                <button type="submit"
+                                                    class="save-disk-btn hidden">{{ __('Change disk') }}</button>
+                                            </form>
+                                        </div>
+
+                                        <div class="url-section">
+                                            <input type="text" readonly value="{{ $file->url }}" />
+                                            <button type="button" class="copy-btn"
+                                                data-url="{{ $file->url }}">{{ __('Copy') }}</button>
+                                        </div>
+
+                                        <div class="actions">
+                                            <button type="button" class="delete-btn"
+                                                data-action="{{ route('module.content.admin.files.destroy', $file->id) }}"
+                                                data-name="{{ $file->name }}">
+                                                {{ __('Delete') }}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
 
                         <div class="mt-6">
@@ -532,6 +724,21 @@
                 }
 
                 updateSubmitButton();
+
+                // Show/Hide Save button on disk change
+                document.querySelectorAll('.disk-select').forEach(select => {
+                    const form = select.closest('.disk-form');
+                    const saveBtn = form.querySelector('.save-disk-btn');
+                    const currentDisk = form.dataset.currentDisk;
+
+                    select.addEventListener('change', function() {
+                        if (this.value === currentDisk) {
+                            saveBtn.classList.add('hidden');
+                        } else {
+                            saveBtn.classList.remove('hidden');
+                        }
+                    });
+                });
 
                 // Copy URL
                 document.addEventListener('click', (e) => {

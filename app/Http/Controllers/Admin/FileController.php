@@ -41,9 +41,13 @@ class FileController extends WebController
         $this->validate($request, [
             'files' => ['required', 'array', 'min:1', 'max:5'],
             'files.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:5120'],
+            'disk' => ['required', 'in:content_local,content_s3'],
         ]);
 
-        $this->fileService->createMany($request->file('files', []));
+        $this->fileService->createMany(
+            $request->file('files', []),
+            $request->input('disk')
+        );
 
         return back()->with('success', __('Files created successfully'));
     }
@@ -58,6 +62,24 @@ class FileController extends WebController
         $this->fileService->delete($id);
 
         return redirect()->route('module.content.admin.files.index')->with('success', __('File delete succesfuly'));
+    }
+
+    /**
+     * Move the file to another disk.
+     *
+     * @param Request $request
+     * @param string $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function update(Request $request, string $id)
+    {
+        $this->validate($request, [
+            'disk' => ['required', 'in:content_local,content_s3'],
+        ]);
+
+        $this->fileService->moveToDisk($id, $request->input('disk'));
+
+        return redirect()->route('module.content.admin.files.index')->with('success', __('File updated successfully'));
     }
 
     /**

@@ -4,19 +4,11 @@ return [
 
     'disks' => [
 
-        'content_backups' => [
-            'driver' => 'local',
-            'root' => storage_path('app/backups'),
-            'serve' => false,
-            'visibility' => 'private',
-            'throw' => false,
-            'report' => false,
-        ],
-
-        'content_public' => [
+        'content_local' => [
             'driver' => 'local',
             'root' => storage_path('app/content'),
-            'visibility' => 'public',
+            'serve' => false,
+            'visibility' => 'private',
             'throw' => false,
             'report' => false,
         ],

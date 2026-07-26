@@ -61,7 +61,14 @@ final class FileService
      */
     public function createFile(array $data)
     {
-        $disk = config('filesystems.default') === 's3' ? 'content_s3' : 'content_public';
+        $disk = in_array(($data['disk'] ?? null), ['content_local', 'content_s3'], true)
+            ? $data['disk']
+            : config('filesystems.default');
+
+        if (!in_array($disk, ['content_local', 'content_s3'], true)) {
+            $disk = 'content_local';
+        }
+
         $file = $data['file'];
         $storedPath = $this->storeUploadedFile($disk, $file);
 
@@ -81,7 +88,7 @@ final class FileService
      * @param array $files 
      * @return array<int, File>
      */
-    public function createMany(array $files): array
+    public function createMany(array $files, ?string $disk = null): array
     {
         $results = [];
 
@@ -93,6 +100,7 @@ final class FileService
             $results[] = $this->createFile([
                 'file' => $file,
                 'name' => $file->getClientOriginalName(),
+                'disk' => $disk,
             ]);
         }
 
@@ -119,6 +127,56 @@ final class FileService
         }
 
         return $this->fileRepository->delete($file);
+    }
+
+    /**
+     * Move a file from one disk to another and update its database record.
+     *
+     * @param string $id
+     * @param string $disk
+     * @return File
+     */
+    public function moveToDisk(string $id, string $disk)
+    {
+        $file = $this->fileRepository->find($id);
+
+        if (empty($file)) {
+            abort(404);
+        }
+
+        if (!in_array($disk, ['content_local', 'content_s3'], true)) {
+            abort(422, __('Invalid disk selected'));
+        }
+
+        if ($file->disk === $disk) {
+            return $file;
+        }
+
+        $sourceDisk = Storage::disk($file->disk);
+        $targetDisk = Storage::disk($disk);
+        $targetDirectory = 'seo/' . now()->format('Y/m');
+        $targetFilename = Str::uuid() . '.' . pathinfo($file->path, PATHINFO_EXTENSION);
+        $targetPath = trim($targetDirectory . '/' . $targetFilename, '/');
+        $stream = $sourceDisk->readStream($file->path);
+
+        if ($stream === false) {
+            abort(404);
+        }
+
+        try {
+            $targetDisk->writeStream($targetPath, $stream);
+        } finally {
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+        }
+
+        $sourceDisk->delete($file->path);
+
+        return $this->fileRepository->update($file, [
+            'disk' => $disk,
+            'path' => $targetPath,
+        ]);
     }
 
     /**

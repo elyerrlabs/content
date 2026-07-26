@@ -25,7 +25,7 @@ Route::middleware("throttle:third-party:content:admin")->group(function () {
     Route::get('policies', [PoliciesController::class, 'form'])->name('policies.schema');
     Route::get('seo', [SeoController::class, 'form'])->name('seo.schema');
 
-    Route::resource('files', FileController::class)->only('index', 'store', 'destroy');
+    Route::resource('files', FileController::class)->only('index', 'store', 'destroy', 'update');
 
     Route::group([
         'prefix' => 'sitemaps',
