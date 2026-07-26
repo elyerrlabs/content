@@ -468,21 +468,6 @@
                             </div>
                         </div>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <span class="text-sm text-slate-500 dark:text-slate-400">
-                            <span class="font-semibold text-slate-900 dark:text-white">{{ $files->total() }}</span>
-                            {{ __('images') }}
-                        </span>
-                        <form method="get" class="flex gap-2">
-                            <input type="search" name="name" value="{{ request('name') }}"
-                                placeholder="{{ __('Search...') }}"
-                                class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-sky-900/40" />
-                            <button type="submit"
-                                class="rounded-xl bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-600 cursor-pointer">
-                                {{ __('Search') }}
-                            </button>
-                        </form>
-                    </div>
                 </div>
             </div>
 
