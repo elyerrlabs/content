@@ -1,7 +1,7 @@
 <x-admin-layout :routes="$routes">
     @push('head')
         @include('layouts.parts.title', ['title' => __('File Management')])
-        @module_vite(['resources/css/pages.css', 'resources/js/pages.js'])
+        @module_vite(['resources/css/app.css', 'resources/css/tailwind.css', 'resources/js/pages.js'])
         <style nonce="{{ $nonce }}">
             .drop-zone {
                 border: 2px dashed #e2e8f0;
@@ -471,7 +471,7 @@
                 </div>
             </div>
 
-            <div class="grid gap-6 lg:grid-cols-[360px_1fr]">
+            <div>
                 <!-- Upload Form -->
                 <div
                     class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
@@ -521,7 +521,98 @@
                     </form>
                 </div>
 
-                <!-- Gallery Grid View -->
+                <form action="{{ route('module.content.admin.files.index') }}" method="GET" class="my-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+                        <!-- Search by Name -->
+                        <div>
+                            <label for="name"
+                                class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
+                                {{ __('Search by name') }}
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-4 w-4 text-slate-400 dark:text-slate-500" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
+                                <input type="text" name="name" id="name" value="{{ request('name') }}"
+                                    placeholder="{{ __('Search images...') }}"
+                                    class="w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:ring-sky-900/40 transition-all duration-200" />
+                            </div>
+                        </div>
+
+                        <!-- Filter by Storage -->
+                        <div class="">
+                            <label for="disk"
+                                class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
+                                {{ __('Storage') }}
+                            </label>
+                            <select name="disk" id="disk"
+                                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 pr-10 text-sm text-slate-700 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-sky-900/40 cursor-pointer transition-all duration-200 appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwb2x5bGluZSBwb2ludHM9IjYgOSAxMiAxNSAxOCA5Ii8+PC9zdmc+')] bg-[length:1.25rem] bg-[center_right_0.75rem] bg-no-repeat">
+                                <option value="">{{ __('All') }}</option>
+                                <option value="content_local"
+                                    {{ request('disk') === 'content_local' ? 'selected' : '' }}>
+                                    {{ __('Local') }}
+                                </option>
+                                <option value="content_s3" {{ request('disk') === 'content_s3' ? 'selected' : '' }}>
+                                    {{ __('S3') }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex items-end gap-3">
+                            <div>
+                                <button type="submit"
+                                    class="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl bg-sky-600 px-5 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:bg-sky-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-sky-200 dark:bg-sky-500 dark:hover:bg-sky-600 dark:focus:ring-sky-900/40 cursor-pointer min-h-[2.75rem] whitespace-nowrap">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                    {{ __('Search') }}
+                                </button>
+                            </div>
+
+                            @if (request('name') || request('disk'))
+                                <a href="{{ route('module.content.admin.files.index') }}"
+                                    class="flex-1 md:flex-none inline-flex items-center justify-center gap-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-slate-50 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 cursor-pointer min-h-[2.75rem] whitespace-nowrap">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    {{ __('Clear') }}
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Active filters summary -->
+                    @if (request('name') || request('disk'))
+                        <div class="mt-3 flex flex-wrap items-center gap-2">
+                            <span
+                                class="text-xs text-slate-500 dark:text-slate-400">{{ __('Active filters:') }}</span>
+                            @if (request('name'))
+                                <span
+                                    class="inline-flex items-center gap-1 rounded-full bg-sky-100 px-3 py-1 text-xs font-medium text-sky-700 dark:bg-sky-900/30 dark:text-sky-300">
+                                    {{ __('Name') }}: "{{ request('name') }}"
+                                </span>
+                            @endif
+                            @if (request('disk'))
+                                <span
+                                    class="inline-flex items-center gap-1 rounded-full bg-sky-100 px-3 py-1 text-xs font-medium text-sky-700 dark:bg-sky-900/30 dark:text-sky-300">
+                                    {{ __('Disk') }}: @if (request('disk') === 'content_local')
+                                        {{ __('Local') }}
+                                    @else
+                                        {{ __('S3') }}
+                                    @endif
+                                </span>
+                            @endif
+                        </div>
+                    @endif
+                </form>
+
                 <div>
                     @if ($files->count())
                         <div class="gallery-grid">

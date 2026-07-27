@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Elyerr\ApiResponse\Exceptions\ReportError;
 
 final class FileService
 {
@@ -38,6 +39,14 @@ final class FileService
             )
         );
 
+        $query->when(
+            $request->filled('disk'),
+            fn($q) => $q->whereRaw(
+                'LOWER(disk) LIKE ?',
+                ['%' . strtolower($request->input('disk')) . '%']
+            )
+        );
+
         $query->orderByDesc('created_at');
 
         return $query;
@@ -61,19 +70,12 @@ final class FileService
      */
     public function createFile(array $data)
     {
-        $disk = in_array(($data['disk'] ?? null), ['content_local', 'content_s3'], true)
-            ? $data['disk']
-            : config('filesystems.default');
-
-        if (!in_array($disk, ['content_local', 'content_s3'], true)) {
-            $disk = 'content_local';
-        }
 
         $file = $data['file'];
-        $storedPath = $this->storeUploadedFile($disk, $file);
+        $storedPath = $this->storeUploadedFile($data['disk'], $file);
 
         return $this->fileRepository->create([
-            'disk' => $disk,
+            'disk' => $data['disk'],
             'path' => $storedPath,
             'name' => $data['name'],
             'original_name' => $file->getClientOriginalName(),
@@ -123,7 +125,14 @@ final class FileService
         }
 
         if (!empty($file->disk) && !empty($file->path)) {
-            Storage::disk($file->disk)->delete($file->path);
+            $storage = Storage::disk($file->disk)->delete($file->path);
+
+            if ($storage === false) {
+                throw new ReportError(
+                    __('Unable to connect to the S3 bucket. The file could not be created. Please verify your S3 credentials and bucket configuration.'),
+                    403
+                );
+            }
         }
 
         return $this->fileRepository->delete($file);
@@ -159,12 +168,20 @@ final class FileService
         $targetPath = trim($targetDirectory . '/' . $targetFilename, '/');
         $stream = $sourceDisk->readStream($file->path);
 
-        if ($stream === false) {
-            abort(404);
+        if ($stream === false || $stream === null) {
+            throw new ReportError(__('Unable to locate or read the file.'), 404);
         }
 
         try {
-            $targetDisk->writeStream($targetPath, $stream);
+            $target = $targetDisk->writeStream($targetPath, $stream);
+
+            if ($target === false) {
+                throw new ReportError(
+                    __('Unable to connect to the S3 bucket. The file could not be created. Please verify your S3 credentials and bucket configuration.'),
+                    403
+                );
+            }
+
         } finally {
             if (is_resource($stream)) {
                 fclose($stream);
@@ -191,7 +208,16 @@ final class FileService
         $directory = 'seo/' . now()->format('Y/m');
         $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
 
-        return Storage::disk($disk)->putFileAs($directory, $file, $filename);
+        $path = Storage::disk($disk)->putFileAs($directory, $file, $filename);
+
+        if ($path === false) {
+            throw new ReportError(
+                __('Unable to connect to the S3 bucket. The file could not be created. Please verify your S3 credentials and bucket configuration.'),
+                403
+            );
+        }
+
+        return $path;
     }
 
     /**
