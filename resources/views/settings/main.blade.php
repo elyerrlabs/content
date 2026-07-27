@@ -2,6 +2,7 @@
 
 @push('head')
     @include('layouts.parts.title', ['title' => __('Settings')])
+    @module_vite(['resources/css/app.css', 'resources/css/tailwind.css', 'resources/js/pages.js'])
 @endpush
 
 @section('content')

@@ -1,7 +1,7 @@
 <x-admin-layout :routes="$routes">
     @push('head')
         <title>{{ __('Favicon Manager - SEO Gallery') }}</title>
-        @module_vite(['resources/css/app.css', 'resources/js/app.js'])
+        @module_vite(['resources/css/app.css', 'resources/css/tailwind.css', 'resources/js/pages.js'])
     @endpush
 
     <v-slot:main>
@@ -222,7 +222,8 @@
                 @endif
             </div>
 
-            <div class="bg-blue-100 dark:bg-blue-900/40 border border-blue-300 dark:border-blue-700 rounded-lg p-4 my-4">
+            <div
+                class="bg-blue-100 dark:bg-blue-900/40 border border-blue-300 dark:border-blue-700 rounded-lg p-4 my-4">
                 <div class="flex items-start gap-3">
                     <div class="shrink-0">
                         <i class="mdi mdi-lightbulb-on-outline text-purple-600 dark:text-purple-400 text-xl"></i>

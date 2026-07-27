@@ -1,30 +1,5 @@
-@import "tailwindcss";
 @import "@fortawesome/fontawesome-free/css/all.min.css";
 @import "@mdi/font/css/materialdesignicons.css";
 @import "jodit/es2021/jodit.min.css";
 @import "jodit/es2021/jodit.min.css";
 @import "monaco-editor/min/vs/style.css";
-@import "@mdi/font/css/materialdesignicons.css"; 
-
-
-@custom-variant dark (&:where(.dark, .dark *));
-
-/*
-|--------------------------------------------------------------------------
-| Tailwind Content Sources
-|--------------------------------------------------------------------------
-|
-| Register here the paths to any Blade, Vue, JavaScript, or other files
-| that use Tailwind CSS classes. Tailwind will scan these sources during
-| the build process and generate only the styles that are actually used.
-|
-| Add new paths as your application grows.
-|
-*/
-
-@source "../../../../resources/views/components/profile.blade.php";
-@source "../../../../resources/views/components/theme.blade.php";
-@source '../../../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source "../**/*.blade.php";
-@source "../**/*.js";
-@source "../**/*.vue";

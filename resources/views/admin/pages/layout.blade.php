@@ -2,7 +2,7 @@
 
     @push('head')
         @include('layouts.parts.title', ['title' => __('Layout manager')])
-        @module_vite(['resources/css/app.css', 'resources/js/app.js'])
+        @module_vite(['resources/css/app.css', 'resources/css/tailwind.css', 'resources/js/pages.js'])
     @endpush
 
     <v-slot:main>
