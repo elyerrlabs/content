@@ -8,7 +8,7 @@
 
     <meta name="nonce" content="{{ $nonce }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    @module_vite(['resources/js/pages.js', 'resources/css/pages.css'])
+    @module_vite(['resources/js/pages.js', 'resources/css/app.css'])
     
     @includeIf('pages.layouts.fonts')
     <script nonce="{{ $nonce }}" src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
