@@ -2,14 +2,11 @@
 
 namespace Content\App\Services;
 
-use Elyerr\ApiResponse\Exceptions\ReportError;
-use Illuminate\Http\Request;
 use RuntimeException;
 use Content\App\Support\SitemapIndex;
 use Content\App\Support\Sitemap;
 use Carbon\Carbon;
 use Content\Vendor\Spatie\Sitemap\Tags\Url;
-use Illuminate\Support\Facades\Storage;
 
 class SitemapService
 {
@@ -37,7 +34,7 @@ class SitemapService
      */
     public function __construct()
     {
-        $this->sitemapPath = public_path('sitemaps');
+        $this->sitemapPath = base_path('public/sitemaps');
         $this->sitemapIndexPath = $this->sitemapPath . "/index.xml";
         $this->customSitemap = "custom.xml";
     }
@@ -176,6 +173,8 @@ class SitemapService
          * Write sitemap XML file
          */
         $sitemap->writeToFile($sitemapFile);
+
+        (new StorageSyncService('public/sitemaps'))->backup();
     }
 
     /**
@@ -204,7 +203,7 @@ class SitemapService
                 $loc = (string) $item->loc;
 
                 // omit unexisting files
-                if (!file_exists(public_path(str_replace(url(''), '', url($loc))))) {
+                if (!file_exists(base_path(str_replace(url(''), '', url($loc))))) {
                     continue;
                 }
 
@@ -256,6 +255,7 @@ class SitemapService
                 $path = $this->sitemapPath . "/$value";
                 if (file_exists($path)) { // check verification path
                     @unlink($path);
+                    (new StorageSyncService("public/sitemaps"))->removeBackup($value);
                 }
             }
         }
@@ -284,7 +284,7 @@ class SitemapService
                 $loc = (string) $item->loc;
 
                 // omit unexisting files
-                if (!file_exists(public_path(str_replace(url(''), '', url($loc))))) {
+                if (!file_exists(base_path(str_replace(url(''), '', url($loc))))) {
                     continue;
                 }
 
@@ -312,13 +312,16 @@ class SitemapService
 
         if (is_dir($this->sitemapPath)) {
             foreach ($files as $file) {
-                @unlink(public_path("sitemaps/" . $file));
+                @unlink(base_path("sitemaps/" . $file));
+                (new StorageSyncService("public/sitemaps"))->removeBackup($file);
+
             }
         }
 
         // Reset robots.txt to block indexing
-        @unlink(public_path('robots.txt'));
-        Storage::disk('content_backups')->delete('robots.txt');
+        @unlink(base_path('robots.txt'));
+        (new StorageSyncService("public"))->removeBackup('robots.txt');
+
 
         $this->getOrUpdateContent(
             "robots.txt",
@@ -336,14 +339,14 @@ class SitemapService
      */
     public function getOrUpdateContent(string $relativePath, string $defaultContent = '', bool $update = false, bool $saveBackup = false)
     {
-        $path = public_path($relativePath);
+        $path = base_path($relativePath);
 
         if (!file_exists($path) || $update) {
-            file_put_contents($relativePath, $defaultContent);
+            file_put_contents($path, $defaultContent);
         }
 
         if ($saveBackup) {
-            Storage::disk('content_backups')->put($relativePath, file_get_contents($path));
+            (new StorageSyncService($relativePath))->backup();
         }
 
         return file_get_contents($path);
@@ -358,11 +361,11 @@ class SitemapService
     public function getOrUpdateCustomSitemap(string $defaultContent = '', bool $update = false)
     {
         // Set real sitemap path 
-        $relativePath = "sitemaps/" . $this->customSitemap;
+        $relativePath = "public/sitemaps/" . $this->customSitemap;
 
         $content = $defaultContent;
 
-        if (!file_exists(public_path($relativePath))) {
+        if (!file_exists(base_path($relativePath))) {
 
             $content = <<<XML
             <?xml version="1.0" encoding="UTF-8"?>
@@ -380,21 +383,13 @@ class SitemapService
         // Add custom sitemap page to the index map
         $this->manageSitemaIndex(str_replace('.xml', '', $this->customSitemap));
 
-        return $this->getOrUpdateContent($relativePath, $content, $update);
+        return $this->getOrUpdateContent($relativePath, $content, $update, true);
     }
 
 
     public function backupFiles()
     {
-        $files = [];
-
-        $files['robots.txt'] = Storage::disk('content_backups')->path('robots.txt');
-
-        foreach ($files as $key => $value) {
-            if (file_exists($value)) {
-                copy($value, public_path($key));
-            }
-        }
-
+        (new StorageSyncService("public/robots.txt"))->restore();
+        (new StorageSyncService("public/sitemaps"))->restore();
     }
 }

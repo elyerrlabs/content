@@ -16,10 +16,7 @@ class RestoreBackup extends Command
      */
     public function handle()
     {
-        if (!file_exists($this->pid())) {
-            app(SitemapService::class)->backupFiles();
-            $this->setPid();
-        }
+        app(SitemapService::class)->backupFiles();
     }
 
     private function setPid()

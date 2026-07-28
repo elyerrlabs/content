@@ -43,7 +43,6 @@ final class SitemapController extends WebController
      */
     public function updateMeta(Request $request)
     {
-
         $this->sitemapService->getOrUpdateCustomSitemap($request->input('content'), true);
 
         return redirect()->back()->with("status", __('Sitemap updated succesfully'));
@@ -68,7 +67,7 @@ final class SitemapController extends WebController
     public function robotForm()
     {
         $content = $this->sitemapService->getOrUpdateContent(
-            'robots.txt',
+            'public/robots.txt',
             "User-agent: *\nDisallow: /"
         );
 
@@ -89,7 +88,7 @@ final class SitemapController extends WebController
         ]);
 
         $this->sitemapService->getOrUpdateContent(
-            'robots.txt',
+            'public/robots.txt',
             $request->input('content'),
             true,
             true

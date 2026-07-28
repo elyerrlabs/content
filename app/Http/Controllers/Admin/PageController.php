@@ -184,7 +184,7 @@ final class PageController extends WebController
     public function generateSitemapFile()
     {
         SitemapIndexJob::dispatch();
-
+        //app(PageService::class)->indexPages();
         return back()->with('status', __('Sitemap index has been generating'));
     }
 

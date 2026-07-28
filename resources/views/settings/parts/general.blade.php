@@ -42,6 +42,42 @@
 
         <!-- Form Fields -->
         <div class="w-full lg:w-3/4 space-y-6">
+            <div
+                class="p-5 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 transition-colors duration-300">
+                <div class="flex items-center mb-4">
+                    <div class="flex items-center justify-center w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg mr-3">
+                        <i class="mdi mdi-backup-restore text-blue-600 dark:text-blue-400 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                            {{ __('Content Backup Disk') }}
+                        </h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            {{ __('Choose where robots.txt and sitemap backups will be stored under backup/.') }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                            {{ __('Backup storage') }}
+                        </label>
+                        <select name="filesystems[backups]"
+                            class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800 transition-colors duration-300">
+                            <option value="content_local"
+                                {{ config('filesystems.backups', 'content_local') == 'content_local' ? 'selected' : '' }}>
+                                {{ __('Content Local') }}
+                            </option>
+                            <option value="content_s3"
+                                {{ config('filesystems.backups', 'content_s3') == 'content_s3' ? 'selected' : '' }}>
+                                {{ __('Content S3') }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
             <!-- Disk Configurations -->
             <div class="space-y-6">
                 <!-- S3 Disk -->
