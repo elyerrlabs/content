@@ -34,7 +34,7 @@ class SitemapService
      */
     public function __construct()
     {
-        $this->sitemapPath = base_path('public/sitemaps');
+        $this->sitemapPath = public_path('sitemaps');
         $this->sitemapIndexPath = $this->sitemapPath . "/index.xml";
         $this->customSitemap = "custom.xml";
     }
@@ -203,7 +203,7 @@ class SitemapService
                 $loc = (string) $item->loc;
 
                 // omit unexisting files
-                if (!file_exists(base_path(str_replace(url(''), '', url($loc))))) {
+                if (!file_exists(public_path(str_replace(url(''), '', url($loc))))) {
                     continue;
                 }
 
@@ -283,8 +283,8 @@ class SitemapService
 
                 $loc = (string) $item->loc;
 
-                // omit unexisting files
-                if (!file_exists(base_path(str_replace(url(''), '', url($loc))))) {
+                // omit unexisting files 
+                if (!file_exists(public_path(str_replace(url(''), '', url($loc))))) {
                     continue;
                 }
 
@@ -312,19 +312,19 @@ class SitemapService
 
         if (is_dir($this->sitemapPath)) {
             foreach ($files as $file) {
-                @unlink(base_path("sitemaps/" . $file));
+                @unlink(public_path("sitemaps/" . $file));
                 (new StorageSyncService("public/sitemaps"))->removeBackup($file);
 
             }
         }
 
         // Reset robots.txt to block indexing
-        @unlink(base_path('robots.txt'));
+        @unlink(public_path('robots.txt'));
         (new StorageSyncService("public"))->removeBackup('robots.txt');
 
 
         $this->getOrUpdateContent(
-            "robots.txt",
+            "public/robots.txt",
             "User-agent: *\nDisallow: /",
             true
         );
@@ -383,7 +383,12 @@ class SitemapService
         // Add custom sitemap page to the index map
         $this->manageSitemaIndex(str_replace('.xml', '', $this->customSitemap));
 
-        return $this->getOrUpdateContent($relativePath, $content, $update, true);
+        $fileContent = $this->getOrUpdateContent($relativePath, $content, $update);
+
+        // Make backup after directory updated
+        (new StorageSyncService('public/sitemaps'))->backup();
+
+        return $fileContent;
     }
 
 
