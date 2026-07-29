@@ -108,7 +108,10 @@ final class StorageSyncService
         if ($this->storage->directoryExists($this->path)) {
 
             File::deleteDirectory($this->localPath());
-            File::makeDirectory($this->localPath(), 0755, true);
+
+            if (!is_dir($this->localPath())) {
+                File::makeDirectory($this->localPath(), 0755, true);
+            }
 
             foreach ($this->storage->allFiles($this->path) as $file) {
 
