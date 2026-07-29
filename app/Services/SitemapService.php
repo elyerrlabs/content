@@ -391,10 +391,23 @@ class SitemapService
         return $fileContent;
     }
 
-
-    public function backupFiles()
+    /**
+     * Restore files
+     * @return void
+     */
+    public function restoreFiles()
     {
         (new StorageSyncService("public/robots.txt"))->restore();
         (new StorageSyncService("public/sitemaps"))->restore();
+    }
+
+    /**
+     * Backup files
+     * @return void
+     */
+    public function backupFiles()
+    {
+        (new StorageSyncService("public/robots.txt"))->backup();
+        (new StorageSyncService("public/sitemaps"))->backup();
     }
 }

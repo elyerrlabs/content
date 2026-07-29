@@ -15,5 +15,5 @@ use Illuminate\Console\Scheduling\Schedule;
 
 return function (Schedule $schedule) {
 
-    $schedule->command('content:module:restore:backup')->everyFiveMinutes()->withoutOverlapping();
+    $schedule->command('content:module:backup:restore')->everyFiveMinutes()->withoutOverlapping();
 };

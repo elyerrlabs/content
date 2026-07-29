@@ -7,7 +7,7 @@ use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
-#[Signature('content:module:restore:backup')]
+#[Signature('content:module:backup:restore')]
 #[Description('Restore content resources from backup')]
 class RestoreBackup extends Command
 {
@@ -16,8 +16,10 @@ class RestoreBackup extends Command
      */
     public function handle()
     {
-        app(SitemapService::class)->backupFiles();
+        app(SitemapService::class)->restoreFiles();
+
     }
+
 
     private function setPid()
     {
