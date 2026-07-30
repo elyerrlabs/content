@@ -184,6 +184,11 @@ class SitemapService
      */
     public function manageSitemaIndex(string $sitemapChild)
     {
+        // create directory for sitemaps
+        if (!is_dir($this->sitemapPath)) {
+            mkdir($this->sitemapPath, 0755, true);
+        }
+
         $index = SitemapIndex::create();
 
         $file = "/sitemaps/{$sitemapChild}.xml";
